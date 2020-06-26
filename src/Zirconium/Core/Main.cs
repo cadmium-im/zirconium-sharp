@@ -6,7 +6,7 @@ namespace Zirconium.Core
     {
         static void Main(string[] args)
         {
-            Console.WriteLine("Hello World! Zirconium");
+            App app = new App();
         }
     }
 }

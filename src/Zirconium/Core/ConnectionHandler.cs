@@ -2,6 +2,7 @@ using System;
 using WebSocketSharp.Server;
 using WebSocketSharp;
 using Zirconium.Core.Models;
+using Zirconium.Utils;
 
 namespace Zirconium.Core
 {
@@ -36,8 +37,13 @@ namespace Zirconium.Core
             var ip = Context.UserEndPoint.Address;
             var connInfo = new ConnectionInfo();
             connInfo.ClientAddress = ip;
+            connInfo.ConnectionHandler = this;
             _app.SessionManager.AddSession(ID, connInfo);
             Console.WriteLine($"Connection {ID} was created"); // TODO implement normal logging
+        }
+
+        public void SendMessage(string message) {
+            this.Send(message.ToByteArray());
         }
     }
 }
