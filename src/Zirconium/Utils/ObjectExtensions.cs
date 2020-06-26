@@ -1,6 +1,8 @@
+using System.Linq;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
+using Newtonsoft.Json;
 
 namespace Zirconium.Utils
 {
@@ -26,7 +28,19 @@ namespace Zirconium.Utils
         {
             object value = property.GetValue(source);
             if (IsOfType<T>(value))
-                dictionary.Add(property.Name, (T)value);
+            {
+                var jsonProp = property.Attributes.OfType<JsonPropertyAttribute>().FirstOrDefault();
+                string propName;
+                if (jsonProp == null)
+                {
+                    propName = property.Name;
+                }
+                else
+                {
+                    propName = jsonProp.PropertyName;
+                }
+                dictionary.Add(propName, (T)value);
+            }
         }
 
         private static bool IsOfType<T>(object value)
@@ -39,12 +53,22 @@ namespace Zirconium.Utils
             throw new ArgumentNullException("source", "Unable to convert object to a dictionary. The source object is null.");
         }
 
-        public static TValue GetValueOrDefault<TKey, TValue> (this IDictionary<TKey, TValue> dictionary,
+        public static TValue GetValueOrDefault<TKey, TValue>(this IDictionary<TKey, TValue> dictionary,
                                                                 TKey key,
                                                                 TValue defaultValue)
         {
             TValue value;
             return dictionary.TryGetValue(key, out value) ? value : defaultValue;
+        }
+
+        public static byte[] ToByteArray(this string str)
+        {
+            return System.Text.Encoding.UTF8.GetBytes(str);
+        }
+
+        public static string ConvertToString(this byte[] bytes)
+        {
+            return System.Text.Encoding.UTF8.GetString(bytes);
         }
     }
 }
