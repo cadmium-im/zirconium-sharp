@@ -1,0 +1,11 @@
+# A list of enabled plugins (or extensions) in server
+EnabledPlugins = []
+
+# Server domain names (e.g. example.com)
+ServerDomains = []
+
+# Path to directory with plugin assemblies
+PluginsDirPath = ""
+
+# ID of this server in terms of Cadmium federation network. WARNING! This ID should be maximally unique.
+ServerID = ""
