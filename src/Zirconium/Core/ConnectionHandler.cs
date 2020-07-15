@@ -1,3 +1,4 @@
+using System.Threading.Tasks;
 using System;
 using WebSocketSharp.Server;
 using WebSocketSharp;
@@ -42,8 +43,9 @@ namespace Zirconium.Core
             Console.WriteLine($"Connection {ID} was created"); // TODO implement normal logging
         }
 
-        public void SendMessage(string message) {
+        public Task SendMessage(string message) {
             this.Send(message.ToByteArray());
+            return Task.CompletedTask;
         }
     }
 }

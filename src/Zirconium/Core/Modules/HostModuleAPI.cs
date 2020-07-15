@@ -1,4 +1,5 @@
 using System;
+using Newtonsoft.Json;
 using Zirconium.Core.Models;
 using Zirconium.Core.Modules.Interfaces;
 
@@ -6,56 +7,58 @@ namespace Zirconium.Core.Modules
 {
     public class HostModuleAPI : IHostModuleAPI
     {
+        private App _app;
         private Router _router;
 
-        public HostModuleAPI(Router router)
+        public HostModuleAPI(App app, Router router)
         {
             _router = router;
+            _app = app;
         }
 
         public void FireEvent(CoreEvent coreEvent)
         {
-            throw new NotImplementedException();
+            _router.RouteCoreEvent(coreEvent);
         }
 
         public string GenerateAuthToken(string entityID, string deviceID, int tokenExpirationMillis)
         {
-            throw new NotImplementedException();
+            return _app.AuthManager.CreateToken(entityID, deviceID, tokenExpirationMillis);
         }
 
         public string[] GetServerDomains()
         {
-            throw new NotImplementedException();
+            return _app.Config.ServerDomains;
         }
 
         public string GetServerID()
         {
-            throw new NotImplementedException();
+            return _app.Config.ServerID;
         }
 
         public void Hook(IC2SMessageHandler handler)
         {
-            throw new NotImplementedException();
+            _router.AddC2SHandler(handler.GetHandlingMessageType(), handler);
         }
 
         public void HookCoreEvent(ICoreEventHandler handler)
         {
-            throw new NotImplementedException();
+            _router.AddCoreEventHandler(handler.GetHandlingEventType(), handler);
         }
 
-        public void SendMessage(string connID, BaseMessage message)
+        public void SendMessage(ConnectionInfo connInfo, BaseMessage message)
         {
-            throw new NotImplementedException();
+            connInfo.ConnectionHandler.SendMessage(JsonConvert.SerializeObject(message));
         }
 
         public void Unhook(IC2SMessageHandler handler)
         {
-            throw new NotImplementedException();
+            _router.RemoveC2SHandler(handler.GetHandlingMessageType(), handler);
         }
 
         public void UnhookCoreEvent(ICoreEventHandler handler)
         {
-            throw new NotImplementedException();
+            _router.RemoveCoreEventHandler(handler.GetHandlingEventType(), handler);
         }
     }
 }

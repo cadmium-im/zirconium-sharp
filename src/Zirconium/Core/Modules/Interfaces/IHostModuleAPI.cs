@@ -12,6 +12,6 @@ namespace Zirconium.Core.Modules.Interfaces
         string GenerateAuthToken(string entityID, string deviceID, int tokenExpirationMillis);
         string[] GetServerDomains();
         string GetServerID();
-        void SendMessage(string connID, BaseMessage message);
+        void SendMessage(ConnectionInfo connInfo, BaseMessage message);
     }
 }

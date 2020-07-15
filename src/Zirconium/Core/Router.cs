@@ -44,46 +44,43 @@ namespace Zirconium.Core
             {
                 if (h.IsAuthorizationRequired())
                 {
-                    JWTPayload tokenPayload;
-                    try
+                    string hash;
+                    using (SHA512 shaM = new SHA512Managed())
                     {
-                        tokenPayload = _app.AuthManager.ValidateToken(message.AuthToken);
+                        hash = shaM.ComputeHash(message.AuthToken.ToByteArray()).ConvertToString();
                     }
-                    catch (Exception e)
+                    if (connInfo.LastTokenHash != hash)
                     {
-                        Log.Warning(e.Message);
-
-                        var serializedMsg = JsonConvert.SerializeObject(
-                            OtherUtils.GenerateProtocolError(
-                                message,
-                                "unauthorized",
-                                "Unauthorized access",
-                                new Dictionary<string, object>()
-                            )
-                        );
-                        connInfo.ConnectionHandler.SendMessage(serializedMsg);
-                        return;
-                    }
-
-                    if (connInfo.LastTokenHash == "" || connInfo.LastTokenHash == null)
-                    {
-                        string hash;
-                        using (SHA512 shaM = new SHA512Managed())
+                        JWTPayload tokenPayload;
+                        try
                         {
-                            hash = shaM.ComputeHash(message.AuthToken.ToByteArray()).ConvertToString();
+                            tokenPayload = _app.AuthManager.ValidateToken(message.AuthToken);
                         }
-                        connInfo.LastTokenHash = hash; 
-                        // TODO implement comparing last token hash and if hash isn't changed then check payload
-                        // if payload already exists - then skip validating auth token
-                    }
+                        catch (Exception e)
+                        {
+                            Log.Warning(e.Message);
 
-                    connInfo.LastTokenPayload = tokenPayload;
+                            var serializedMsg = JsonConvert.SerializeObject(
+                                OtherUtils.GenerateProtocolError(
+                                    message,
+                                    "unauthorized",
+                                    "Unauthorized access",
+                                    new Dictionary<string, object>()
+                                )
+                            );
+                            connInfo.ConnectionHandler.SendMessage(serializedMsg);
+                            return;
+                        }
+
+                        connInfo.LastTokenHash = hash;
+                        connInfo.LastTokenPayload = tokenPayload;
+                    }
                 }
 
                 Task.Run(() =>
-                { 
+                {
                     // probably need to wrap whole foreach body, not only HandleMessage call - need to investigate
-                    h.HandleMessage(message);
+                    h.HandleMessage(connInfo, message);
                 });
             }
         }
@@ -91,11 +88,13 @@ namespace Zirconium.Core
         public void RouteCoreEvent(CoreEvent coreEvent)
         {
             var handlers = _coreEventsHandlers[coreEvent.Name];
-            if (handlers == null) {
+            if (handlers == null)
+            {
                 Log.Warning($"Drop core event {coreEvent.Name} because server hasn't proper handlers");
                 return;
             }
-            foreach (var h in handlers) {
+            foreach (var h in handlers)
+            {
                 Task.Run(() =>
                 {
                     h.HandleEvent(coreEvent);
@@ -112,6 +111,13 @@ namespace Zirconium.Core
             this._c2sMessageHandlers[messageType].Add(handler);
         }
 
+        public void RemoveC2SHandler(string messageType, IC2SMessageHandler handler)
+        {
+            if (!this._c2sMessageHandlers[messageType].Remove(handler)) {
+                Log.Warning("attempt to remove c2s handler which doesn't exist in router");
+            }
+        }
+
         public void AddCoreEventHandler(string eventType, ICoreEventHandler handler)
         {
             if (_coreEventsHandlers.GetValueOrDefault(eventType, null) == null)
@@ -119,6 +125,13 @@ namespace Zirconium.Core
                 _coreEventsHandlers[eventType] = new List<ICoreEventHandler>();
             }
             this._coreEventsHandlers[eventType].Add(handler);
+        }
+
+        public void RemoveCoreEventHandler(string eventType, ICoreEventHandler handler)
+        {
+            if (!this._coreEventsHandlers[eventType].Remove(handler)) {
+                Log.Warning("attempt to remove core handler which doesn't exist in router");
+            }
         }
     }
 }

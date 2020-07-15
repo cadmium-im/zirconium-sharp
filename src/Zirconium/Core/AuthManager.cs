@@ -10,7 +10,7 @@ namespace Zirconium.Core
     {
         private App _app;
         private string _secretString;
-        private const int TOKEN_EXPIRATION_TIME_HOURS = 24;
+        private const long DEFAULT_TOKEN_EXPIRATION_TIME_HOURS = 24 * 3600000;
 
         public AuthManager(App app)
         {
@@ -18,7 +18,7 @@ namespace Zirconium.Core
             _secretString = Guid.NewGuid().ToString();
         }
 
-        public string CreateToken(string entityID, string deviceID)
+        public string CreateToken(string entityID, string deviceID, long tokenExpirationMillis)
         {
             JWTPayload payload = new JWTPayload();
             payload.DeviceID = deviceID;
@@ -26,9 +26,13 @@ namespace Zirconium.Core
             return new JwtBuilder()
                 .WithAlgorithm(new HMACSHA256Algorithm()) // symmetric
                 .WithSecret(_secretString)
-                .AddClaim("exp", DateTimeOffset.UtcNow.AddHours(TOKEN_EXPIRATION_TIME_HOURS).ToUnixTimeSeconds())
+                .AddClaim("exp", DateTimeOffset.UtcNow.AddMilliseconds(tokenExpirationMillis).ToUnixTimeSeconds())
                 .AddClaims(payload.ToDictionary())
                 .Encode();
+        }
+
+        public string CreateToken(string entityID, string deviceID) {
+            return CreateToken(entityID, deviceID, DEFAULT_TOKEN_EXPIRATION_TIME_HOURS);
         }
 
         public JWTPayload ValidateToken(string token)
