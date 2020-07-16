@@ -9,3 +9,9 @@ PluginsDirPath = ""
 
 # ID of this server in terms of Cadmium federation network. WARNING! This ID should be maximally unique.
 ServerID = ""
+
+# Websocket server settings
+[Websocket]
+Host = "localhost"
+Port = 8000
+Endpoint = ""

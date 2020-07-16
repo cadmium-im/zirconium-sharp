@@ -25,18 +25,18 @@ namespace Zirconium.Core
 
         public void RouteMessage(ConnectionInfo connInfo, BaseMessage message)
         {
-            var handlers = _c2sMessageHandlers[message.MessageType];
+            var handlers = _c2sMessageHandlers.GetValueOrDefault(message.MessageType, null);
             if (handlers == null)
             {
-                Log.Warning($"Drop message with type {message.MessageType} because server hasn't proper handlers");
-                var serializedMsg = JsonConvert.SerializeObject(
-                    OtherUtils.GenerateProtocolError(
-                        message,
-                        "unhandled",
-                        $"Server doesn't implement message type {message.MessageType}",
-                        new Dictionary<string, object>()
-                    )
+                Log.Warning($"Drop message with type \"{message.MessageType}\" because server hasn't proper handlers");
+                var msg = OtherUtils.GenerateProtocolError(
+                    message,
+                    "unhandled",
+                    $"Server doesn't implement message type \"{message.MessageType}\"",
+                    new Dictionary<string, object>()
                 );
+                msg.From = _app.Config.ServerID;
+                var serializedMsg = JsonConvert.SerializeObject(msg);
                 connInfo.ConnectionHandler.SendMessage(serializedMsg);
                 return;
             }
@@ -113,7 +113,8 @@ namespace Zirconium.Core
 
         public void RemoveC2SHandler(string messageType, IC2SMessageHandler handler)
         {
-            if (!this._c2sMessageHandlers[messageType].Remove(handler)) {
+            if (!this._c2sMessageHandlers[messageType].Remove(handler))
+            {
                 Log.Warning("attempt to remove c2s handler which doesn't exist in router");
             }
         }
@@ -129,7 +130,8 @@ namespace Zirconium.Core
 
         public void RemoveCoreEventHandler(string eventType, ICoreEventHandler handler)
         {
-            if (!this._coreEventsHandlers[eventType].Remove(handler)) {
+            if (!this._coreEventsHandlers[eventType].Remove(handler))
+            {
                 Log.Warning("attempt to remove core handler which doesn't exist in router");
             }
         }

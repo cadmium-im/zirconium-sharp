@@ -11,16 +11,16 @@ namespace Zirconium.Core.Models
         [JsonProperty("type")]
         public string MessageType { get; set; }
 
-        [JsonProperty("from")]
+        [JsonProperty("from", NullValueHandling = NullValueHandling.Ignore)]
         public string From { get; set; }
 
-        [JsonProperty("to")]
+        [JsonProperty("to", NullValueHandling = NullValueHandling.Ignore)]
         public string To { get; set; }
 
         [JsonProperty("ok")]
         public bool Ok { get; set; }
 
-        [JsonProperty("authToken")]
+        [JsonProperty("authToken", NullValueHandling = NullValueHandling.Ignore)]
         public string AuthToken { get; set; }
 
         [JsonProperty("payload")]
@@ -30,22 +30,25 @@ namespace Zirconium.Core.Models
 
         public BaseMessage(BaseMessage message, bool reply)
         {
-            ID = message.ID;
-            MessageType = message.MessageType;
-            if (reply)
+            if (message != null)
             {
-                From = message.To;
-                To = message.From;
-            }
-            else
-            {
-                From = message.From;
-                To = message.To;
-            }
+                ID = message.ID;
+                MessageType = message.MessageType;
+                if (reply)
+                {
+                    From = message.To;
+                    To = message.From;
+                }
+                else
+                {
+                    From = message.From;
+                    To = message.To;
+                }
 
-            Ok = message.Ok;
-            AuthToken = message.AuthToken;
-            Payload = message.Payload;
+                Ok = message.Ok;
+                AuthToken = message.AuthToken;
+                Payload = message.Payload;
+            }
         }
     }
 }

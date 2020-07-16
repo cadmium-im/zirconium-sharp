@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using Zirconium.Core.Models;
 
@@ -13,6 +14,9 @@ namespace Zirconium.Utils
             err.ErrPayload = errPayload;
 
             BaseMessage msg = new BaseMessage(parentMessage, true);
+            if (parentMessage == null) {
+                msg.ID = Guid.NewGuid().ToString();
+            }
             msg.Ok = false;
             msg.Payload = err.ToDictionary();
             return msg;

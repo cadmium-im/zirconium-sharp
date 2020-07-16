@@ -12,6 +12,8 @@ namespace Zirconium.Core
     }
     class Program
     {
+        private static bool keepRunning = true;
+
         static void Main(string[] args)
         {
             string configPath = null;
@@ -38,6 +40,14 @@ namespace Zirconium.Core
                 Log.Fatal($"Error occured when parsing config - {e.Message}");
             }
             App app = new App(config);
+            app.Run();
+            Console.CancelKeyPress += delegate (object sender, ConsoleCancelEventArgs e)
+            {
+                e.Cancel = true;
+                app.Destroy();
+                keepRunning = false;
+            };
+            while(keepRunning) {}
         }
     }
 }

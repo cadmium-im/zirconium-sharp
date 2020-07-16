@@ -1,9 +1,11 @@
-using System.Threading.Tasks;
 using System;
+using System.Threading.Tasks;
 using WebSocketSharp.Server;
 using WebSocketSharp;
 using Zirconium.Core.Models;
 using Zirconium.Utils;
+using Newtonsoft.Json;
+using System.Collections.Generic;
 
 namespace Zirconium.Core
 {
@@ -19,18 +21,49 @@ namespace Zirconium.Core
         protected override void OnClose(CloseEventArgs e)
         {
             _app.SessionManager.DeleteSession(ID);
-            Console.WriteLine($"Connection {ID} was closed (reason: {e.Reason})"); // TODO implement normal logging
+            Logging.Log.Info($"Connection {ID} was closed (reason: {e.Reason})");
             // TODO implement closing connection
         }
 
         protected override void OnError(ErrorEventArgs e)
         {
-            Console.WriteLine($"Error occurred: {e.Exception}"); // TODO implement normal logging
+            Logging.Log.Error($"Error occurred: {e.Exception}");
         }
 
         protected override void OnMessage(MessageEventArgs e)
         {
-            // TODO implement message parsing and routing
+            try
+            {
+                if (e.IsText)
+                {
+                    var msg = JsonConvert.DeserializeObject<BaseMessage>(e.Data);
+                    _app.Router.RouteMessage(_app.SessionManager.GetConnectionInfo(ID), msg);
+                }
+                else
+                {
+                    var errMsg = OtherUtils.GenerateProtocolError(
+                        null,
+                        "parseError",
+                        $"Server cannot parse this message yet because it is not JSON",
+                        new Dictionary<string, object>()
+                    );
+                    errMsg.From = _app.Config.ServerID;
+                    var msgStr = JsonConvert.SerializeObject(errMsg);
+                    this.SendMessage(msgStr);
+                }
+            }
+            catch (Exception ex)
+            {
+                var errMsg = OtherUtils.GenerateProtocolError(
+                    null,
+                    "parseError",
+                    $"Server cannot parse this message! {ex.Message}",
+                    new Dictionary<string, object>()
+                );
+                errMsg.From = _app.Config.ServerID;
+                var msgStr = JsonConvert.SerializeObject(errMsg);
+                this.SendMessage(msgStr);
+            }
         }
 
         protected override void OnOpen()
@@ -40,12 +73,12 @@ namespace Zirconium.Core
             connInfo.ClientAddress = ip;
             connInfo.ConnectionHandler = this;
             _app.SessionManager.AddSession(ID, connInfo);
-            Console.WriteLine($"Connection {ID} was created"); // TODO implement normal logging
+            Logging.Log.Info($"Connection {ID} was created");
         }
 
-        public Task SendMessage(string message) {
-            this.Send(message.ToByteArray());
-            return Task.CompletedTask;
+        public void SendMessage(string message)
+        {
+            this.Send(message);
         }
     }
 }
