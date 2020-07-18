@@ -24,6 +24,8 @@ namespace Zirconium.Core
             Router = new Router(this);
             HostModuleAPI = new HostModuleAPI(this, Router);
             AuthManager = new AuthManager(this);
+            ModuleManager = new ModuleManager(HostModuleAPI);
+            ModuleManager.LoadModules(config.PluginsDirPath, config.EnabledPlugins);
             Log.Info("Zirconium is initialized successfully");
         }
 

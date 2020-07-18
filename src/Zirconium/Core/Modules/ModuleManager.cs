@@ -23,8 +23,13 @@ namespace Zirconium.Core.Modules
             _moduleMutex = new Mutex();
         }
 
-        public void LoadModules(string folderPath) {
+        public void LoadModules(string folderPath, string[] enabledModules)
+        {
             var loaders = new List<PluginLoader>();
+            if (folderPath == "") {
+                Logging.Log.Warning("Plugins folder path is not specified!");
+                return;
+            }
 
             // create module loaders
             foreach (var dir in Directory.GetDirectories(folderPath))
@@ -33,18 +38,21 @@ namespace Zirconium.Core.Modules
                 var pluginDll = Path.Combine(dir, dirName + ".dll");
                 if (File.Exists(pluginDll))
                 {
-                    var loader = PluginLoader.CreateFromAssemblyFile(
-                        pluginDll,
-                        sharedTypes: new[] { 
-                                                typeof(IModuleAPI),
-                                                typeof(IHostModuleAPI),
-                                                typeof(IC2SMessageHandler),
-                                                typeof(ICoreEventHandler),
-                                                typeof(BaseMessage),
-                                                typeof(CoreEvent)
-                                            }
-                    );
-                    loaders.Add(loader);
+                    if (enabledModules.Where(x => x == pluginDll).FirstOrDefault() != null)
+                    {
+                        var loader = PluginLoader.CreateFromAssemblyFile(
+                            pluginDll,
+                            sharedTypes: new[] {
+                                                    typeof(IModuleAPI),
+                                                    typeof(IHostModuleAPI),
+                                                    typeof(IC2SMessageHandler),
+                                                    typeof(ICoreEventHandler),
+                                                    typeof(BaseMessage),
+                                                    typeof(CoreEvent)
+                                                }
+                        );
+                        loaders.Add(loader);
+                    }
                 }
             }
 
