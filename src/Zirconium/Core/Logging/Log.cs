@@ -42,5 +42,9 @@ namespace Zirconium.Core.Logging
         public static void Info(string message) {
             _defaultLogger.Info(message);
         }
+
+        public static void Debug(string message) {
+            _defaultLogger.Debug(message);
+        }
     }
 }

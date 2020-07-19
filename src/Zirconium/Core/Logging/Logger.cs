@@ -34,6 +34,12 @@ namespace Zirconium.Core.Logging
             }
         }
 
+        public void Debug(string message) {
+            if (_isVerbose) {
+                writeLog(LogType.Debug, message);
+            }
+        }
+
         public void Fatal(string message) {
             writeLog(LogType.Fatal, message);
             System.Environment.Exit(1);
@@ -70,6 +76,10 @@ namespace Zirconium.Core.Logging
                     tagFormatter = new Formatter("WARNING", Color.Yellow);
                     break;
                 }
+                case LogType.Debug: {
+                    tagFormatter = new Formatter("DEBUG", Color.Lime);
+                    break;
+                }
                 default: {
                     tagFormatter = new Formatter("UNKNOWN", Color.Green);
                     break;
@@ -87,7 +97,8 @@ namespace Zirconium.Core.Logging
             Error,
             Fatal,
             Info,
-            Warning
+            Warning,
+            Debug
         }
     }
 }
