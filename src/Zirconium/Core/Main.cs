@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Threading;
 using CommandLine;
 using Nett;
 using Zirconium.Core.Logging;
@@ -12,7 +13,7 @@ namespace Zirconium.Core
     }
     class Program
     {
-        private static bool keepRunning = true;
+        private static EventWaitHandle wailtHandle = new EventWaitHandle(false, EventResetMode.AutoReset);
 
         static void Main(string[] args)
         {
@@ -45,9 +46,9 @@ namespace Zirconium.Core
             {
                 e.Cancel = true;
                 app.Destroy();
-                keepRunning = false;
+                wailtHandle.Set();
             };
-            while(keepRunning) {}
+            wailtHandle.WaitOne();
         }
     }
 }
