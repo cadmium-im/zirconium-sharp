@@ -30,6 +30,7 @@ namespace Zirconium.Core.Models
 
         public BaseMessage(BaseMessage message, bool reply)
         {
+            Payload = new Dictionary<string, object>();
             if (message != null)
             {
                 ID = message.ID;

@@ -26,7 +26,8 @@ namespace Zirconium.Core.Modules
         public void LoadModules(string folderPath, string[] enabledModules)
         {
             var loaders = new List<PluginLoader>();
-            if (folderPath == "") {
+            if (folderPath == "")
+            {
                 Logging.Log.Warning("Plugins folder path is not specified!");
                 return;
             }
@@ -35,24 +36,26 @@ namespace Zirconium.Core.Modules
             foreach (var dir in Directory.GetDirectories(folderPath))
             {
                 var dirName = Path.GetFileName(dir);
+                if (enabledModules.Where(x => x == dirName).FirstOrDefault() == null) {
+                    continue;
+                }
                 var pluginDll = Path.Combine(dir, dirName + ".dll");
                 if (File.Exists(pluginDll))
                 {
-                    if (enabledModules.Where(x => x == pluginDll).FirstOrDefault() != null)
-                    {
-                        var loader = PluginLoader.CreateFromAssemblyFile(
-                            pluginDll,
-                            sharedTypes: new[] {
+                    Logging.Log.Debug("found plugin " + dirName);
+                    Logging.Log.Debug("try to init plugin " + dirName);
+                    var loader = PluginLoader.CreateFromAssemblyFile(
+                        pluginDll,
+                        sharedTypes: new[] {
                                                     typeof(IModuleAPI),
                                                     typeof(IHostModuleAPI),
                                                     typeof(IC2SMessageHandler),
                                                     typeof(ICoreEventHandler),
                                                     typeof(BaseMessage),
                                                     typeof(CoreEvent)
-                                                }
-                        );
-                        loaders.Add(loader);
-                    }
+                                            }
+                    );
+                    loaders.Add(loader);
                 }
             }
 
@@ -66,7 +69,7 @@ namespace Zirconium.Core.Modules
                 {
                     // This assumes the implementation of IPlugin has a parameterless constructor
                     IModuleAPI module = (IModuleAPI)Activator.CreateInstance(pluginType);
-                    Console.WriteLine($"Created module instance '{module.GetModuleUniqueName()}'.");
+                    Logging.Log.Debug($"Created module instance '{module.GetModuleUniqueName()}'.");
                     module.Initialize(_hostModuleAPI);
                     _modules.Add(module);
                 }
