@@ -13,5 +13,7 @@ namespace Zirconium.Core.Modules.Interfaces
         string[] GetServerDomains();
         string GetServerID();
         void SendMessage(ConnectionInfo connInfo, BaseMessage message);
+        dynamic GetSettings(IModuleAPI plugin);
+        dynamic GetSettings(string pluginName);
     }
 }

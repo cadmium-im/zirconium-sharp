@@ -12,6 +12,14 @@ ServerID = ""
 
 # Websocket server settings
 [Websocket]
-Host = "localhost"
-Port = 8000
-Endpoint = ""
+    Host = "localhost"
+    Port = 8000
+    Endpoint = ""
+
+# Here you can specify settings that is exposed by plugins
+# For example - [Plugins.HelloWorld] is the settings for plugin called HelloWorld
+[Plugins]
+    [Plugins.HelloWorld]
+    text = "123"
+        [Plugins.HelloWorld.Test]
+        modes = ["abc"]

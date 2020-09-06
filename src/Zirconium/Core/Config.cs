@@ -1,3 +1,5 @@
+using System.Collections.Generic;
+
 namespace Zirconium.Core
 {
     public class Config
@@ -16,6 +18,9 @@ namespace Zirconium.Core
 
         // Websocket server settings
         public Websocket Websocket { get; set; }
+
+        // Configurations of plugins
+        public Dictionary<string, dynamic> Plugins { get; set; }
     }
 
     public class Websocket

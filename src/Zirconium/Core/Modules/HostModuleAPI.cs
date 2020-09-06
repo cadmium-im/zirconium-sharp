@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using System;
 using Newtonsoft.Json;
 using Zirconium.Core.Models;
@@ -34,6 +35,16 @@ namespace Zirconium.Core.Modules
         public string GetServerID()
         {
             return _app.Config.ServerID;
+        }
+
+        public dynamic GetSettings(IModuleAPI plugin)
+        {
+            return _app.Config.Plugins.GetValueOrDefault(plugin.GetModuleUniqueName(), null);
+        }
+
+        public dynamic GetSettings(string pluginName)
+        {
+            return _app.Config.Plugins.GetValueOrDefault(pluginName, null);
         }
 
         public void Hook(IC2SMessageHandler handler)
