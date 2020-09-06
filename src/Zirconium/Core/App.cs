@@ -1,5 +1,5 @@
-using Zirconium.Core.Modules;
-using Zirconium.Core.Modules.Interfaces;
+using Zirconium.Core.Plugins;
+using Zirconium.Core.Plugins.Interfaces;
 using Zirconium.Core.Logging;
 using WebSocketSharp.Server;
 
@@ -10,8 +10,8 @@ namespace Zirconium.Core
         public Config Config;
         public SessionManager SessionManager { get; }
         public Router Router { get; }
-        public ModuleManager ModuleManager { get; }
-        public IHostModuleAPI HostModuleAPI { get; }
+        public PluginManager PluginManager { get; }
+        public IPluginHostAPI PluginHostAPI { get; }
         public AuthManager AuthManager { get; }
         private WebSocketServer _websocketServer;
 
@@ -22,10 +22,10 @@ namespace Zirconium.Core
             _websocketServer.AddWebSocketService<ConnectionHandler>(config.Websocket.Endpoint, () => new ConnectionHandler(this));
             SessionManager = new SessionManager();
             Router = new Router(this);
-            HostModuleAPI = new HostModuleAPI(this, Router);
+            PluginHostAPI = new PluginHostAPI(this, Router);
             AuthManager = new AuthManager(this);
-            ModuleManager = new ModuleManager(HostModuleAPI);
-            ModuleManager.LoadModules(config.PluginsDirPath, config.EnabledPlugins);
+            PluginManager = new PluginManager(PluginHostAPI);
+            PluginManager.LoadPlugins(config.PluginsDirPath, config.EnabledPlugins);
             Log.Info("Zirconium is initialized successfully");
         }
 

@@ -1,8 +1,8 @@
 using Zirconium.Core.Models;
 
-namespace Zirconium.Core.Modules.Interfaces
+namespace Zirconium.Core.Plugins.Interfaces
 {
-    public interface IHostModuleAPI
+    public interface IPluginHostAPI
     {
         void Hook(IC2SMessageHandler handler);
         void HookCoreEvent(ICoreEventHandler handler);
@@ -13,7 +13,7 @@ namespace Zirconium.Core.Modules.Interfaces
         string[] GetServerDomains();
         string GetServerID();
         void SendMessage(ConnectionInfo connInfo, BaseMessage message);
-        dynamic GetSettings(IModuleAPI plugin);
+        dynamic GetSettings(IPluginAPI plugin);
         dynamic GetSettings(string pluginName);
     }
 }

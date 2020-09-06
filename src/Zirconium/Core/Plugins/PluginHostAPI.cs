@@ -2,16 +2,16 @@ using System.Collections.Generic;
 using System;
 using Newtonsoft.Json;
 using Zirconium.Core.Models;
-using Zirconium.Core.Modules.Interfaces;
+using Zirconium.Core.Plugins.Interfaces;
 
-namespace Zirconium.Core.Modules
+namespace Zirconium.Core.Plugins
 {
-    public class HostModuleAPI : IHostModuleAPI
+    public class PluginHostAPI : IPluginHostAPI
     {
         private App _app;
         private Router _router;
 
-        public HostModuleAPI(App app, Router router)
+        public PluginHostAPI(App app, Router router)
         {
             _router = router;
             _app = app;
@@ -37,9 +37,9 @@ namespace Zirconium.Core.Modules
             return _app.Config.ServerID;
         }
 
-        public dynamic GetSettings(IModuleAPI plugin)
+        public dynamic GetSettings(IPluginAPI plugin)
         {
-            return _app.Config.Plugins.GetValueOrDefault(plugin.GetModuleUniqueName(), null);
+            return _app.Config.Plugins.GetValueOrDefault(plugin.GetPluginUniqueName(), null);
         }
 
         public dynamic GetSettings(string pluginName)

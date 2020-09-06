@@ -1,15 +1,15 @@
 ﻿using Newtonsoft.Json;
 using Zirconium.Core.Logging;
 using Zirconium.Core.Models;
-using Zirconium.Core.Modules.Interfaces;
+using Zirconium.Core.Plugins.Interfaces;
 
 namespace HelloWorldPlugin
 {
-    internal class HelloWorldPlugin : IModuleAPI
+    internal class HelloWorldPlugin : IPluginAPI
     {
-        public string GetModuleUniqueName() => "HelloWorldPlugin";
+        public string GetPluginUniqueName() => "HelloWorldPlugin";
 
-        public void Initialize(IHostModuleAPI hostModuleAPI)
+        public void Initialize(IPluginHostAPI hostModuleAPI)
         {
             var handler = new C2SHandler(hostModuleAPI);
             hostModuleAPI.Hook(handler);
@@ -19,9 +19,9 @@ namespace HelloWorldPlugin
 
     internal class C2SHandler : IC2SMessageHandler
     {
-        private IHostModuleAPI hostModuleAPI;
+        private IPluginHostAPI hostModuleAPI;
 
-        public C2SHandler(IHostModuleAPI hostModuleAPI) {
+        public C2SHandler(IPluginHostAPI hostModuleAPI) {
             this.hostModuleAPI = hostModuleAPI;
         }
 

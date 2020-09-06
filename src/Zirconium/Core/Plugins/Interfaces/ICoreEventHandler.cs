@@ -1,6 +1,6 @@
 using Zirconium.Core.Models;
 
-namespace Zirconium.Core.Modules.Interfaces
+namespace Zirconium.Core.Plugins.Interfaces
 {
     public interface ICoreEventHandler
     {

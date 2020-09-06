@@ -5,25 +5,25 @@ using System.Linq;
 using System.Threading;
 using McMaster.NETCore.Plugins;
 using Zirconium.Core.Models;
-using Zirconium.Core.Modules.Interfaces;
+using Zirconium.Core.Plugins.Interfaces;
 
-namespace Zirconium.Core.Modules
+namespace Zirconium.Core.Plugins
 {
-    // Class which responsible for module managing (loading, initializing) and module lifetime cycle
-    public class ModuleManager
+    // Class which responsible for plugin managing (loading, initializing) and plugin lifetime cycle
+    public class PluginManager
     {
-        private IList<IModuleAPI> _modules;
-        private IHostModuleAPI _hostModuleAPI;
-        private Mutex _moduleMutex;
+        private IList<IPluginAPI> _plugins;
+        private IPluginHostAPI _pluginHostAPI;
+        private Mutex _pluginsMutex;
 
-        public ModuleManager(IHostModuleAPI hostModuleAPI)
+        public PluginManager(IPluginHostAPI hostModuleAPI)
         {
-            _hostModuleAPI = hostModuleAPI;
-            _modules = new List<IModuleAPI>();
-            _moduleMutex = new Mutex();
+            _pluginHostAPI = hostModuleAPI;
+            _plugins = new List<IPluginAPI>();
+            _pluginsMutex = new Mutex();
         }
 
-        public void LoadModules(string folderPath, string[] enabledModules)
+        public void LoadPlugins(string folderPath, string[] enabledPlugins)
         {
             var loaders = new List<PluginLoader>();
             if (folderPath == "")
@@ -36,7 +36,7 @@ namespace Zirconium.Core.Modules
             foreach (var dir in Directory.GetDirectories(folderPath))
             {
                 var dirName = Path.GetFileName(dir);
-                if (enabledModules.Where(x => x == dirName).FirstOrDefault() == null) {
+                if (enabledPlugins.Where(x => x == dirName).FirstOrDefault() == null) {
                     continue;
                 }
                 var pluginDll = Path.Combine(dir, dirName + ".dll");
@@ -47,8 +47,8 @@ namespace Zirconium.Core.Modules
                     var loader = PluginLoader.CreateFromAssemblyFile(
                         pluginDll,
                         sharedTypes: new[] {
-                                                    typeof(IModuleAPI),
-                                                    typeof(IHostModuleAPI),
+                                                    typeof(IPluginAPI),
+                                                    typeof(IPluginHostAPI),
                                                     typeof(IC2SMessageHandler),
                                                     typeof(ICoreEventHandler),
                                                     typeof(BaseMessage),
@@ -65,13 +65,13 @@ namespace Zirconium.Core.Modules
                 foreach (var pluginType in loader
                     .LoadDefaultAssembly()
                     .GetTypes()
-                    .Where(t => typeof(IModuleAPI).IsAssignableFrom(t) && !t.IsAbstract))
+                    .Where(t => typeof(IPluginAPI).IsAssignableFrom(t) && !t.IsAbstract))
                 {
                     // This assumes the implementation of IPlugin has a parameterless constructor
-                    IModuleAPI module = (IModuleAPI)Activator.CreateInstance(pluginType);
-                    Logging.Log.Debug($"Created module instance '{module.GetModuleUniqueName()}'.");
-                    module.Initialize(_hostModuleAPI);
-                    _modules.Add(module);
+                    IPluginAPI plugin = (IPluginAPI)Activator.CreateInstance(pluginType);
+                    Logging.Log.Debug($"Created plugin instance '{plugin.GetPluginUniqueName()}'.");
+                    plugin.Initialize(_pluginHostAPI);
+                    _plugins.Add(plugin);
                 }
             }
         }

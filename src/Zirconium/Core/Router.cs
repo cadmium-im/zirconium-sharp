@@ -2,7 +2,7 @@ using System.Threading.Tasks;
 using System;
 using System.Collections.Generic;
 using Zirconium.Core.Models;
-using Zirconium.Core.Modules.Interfaces;
+using Zirconium.Core.Plugins.Interfaces;
 using Zirconium.Utils;
 using Zirconium.Core.Logging;
 using Newtonsoft.Json;
