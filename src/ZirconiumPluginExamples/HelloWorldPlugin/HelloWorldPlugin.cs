@@ -15,13 +15,18 @@ namespace HelloWorldPlugin
             hostModuleAPI.Hook(handler);
             Log.Debug("plugin is initialized");
         }
+
+        public void PreInitialize(IPluginManager pluginManager) { }
+
+        public dynamic GetExportedAPI() { return null; }
     }
 
     internal class C2SHandler : IC2SMessageHandler
     {
         private IPluginHostAPI hostModuleAPI;
 
-        public C2SHandler(IPluginHostAPI hostModuleAPI) {
+        public C2SHandler(IPluginHostAPI hostModuleAPI)
+        {
             this.hostModuleAPI = hostModuleAPI;
         }
 

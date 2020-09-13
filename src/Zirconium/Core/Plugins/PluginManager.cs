@@ -6,20 +6,22 @@ using System.Threading;
 using McMaster.NETCore.Plugins;
 using Zirconium.Core.Models;
 using Zirconium.Core.Plugins.Interfaces;
+using Zirconium.Utils;
 
 namespace Zirconium.Core.Plugins
 {
     // Class which responsible for plugin managing (loading, initializing) and plugin lifetime cycle
-    public class PluginManager
+    public class PluginManager : IPluginManager
     {
-        private IList<IPluginAPI> _plugins;
+        private IDictionary<string, IPluginAPI> _plugins;
         private IPluginHostAPI _pluginHostAPI;
         private Mutex _pluginsMutex;
+        private string _currentPluginFolderPath;
 
         public PluginManager(IPluginHostAPI hostModuleAPI)
         {
             _pluginHostAPI = hostModuleAPI;
-            _plugins = new List<IPluginAPI>();
+            _plugins = new Dictionary<string, IPluginAPI>();
             _pluginsMutex = new Mutex();
         }
 
@@ -32,48 +34,71 @@ namespace Zirconium.Core.Plugins
                 return;
             }
 
-            // create module loaders
+            _currentPluginFolderPath = folderPath;
+
             foreach (var dir in Directory.GetDirectories(folderPath))
             {
-                var dirName = Path.GetFileName(dir);
-                if (enabledPlugins.Where(x => x == dirName).FirstOrDefault() == null) {
+                var pluginName = Path.GetFileName(dir);
+                if (enabledPlugins.Where(x => x == pluginName).FirstOrDefault() == null)
+                {
                     continue;
                 }
-                var pluginDll = Path.Combine(dir, dirName + ".dll");
-                if (File.Exists(pluginDll))
-                {
-                    Logging.Log.Debug("found plugin " + dirName);
-                    Logging.Log.Debug("try to init plugin " + dirName);
-                    var loader = PluginLoader.CreateFromAssemblyFile(
-                        pluginDll,
-                        sharedTypes: new[] {
+
+                var plugin = this.LoadPlugin(pluginName);
+                _pluginsMutex.WaitOne();
+                _plugins[pluginName] = plugin;
+                _pluginsMutex.ReleaseMutex();
+            }
+        }
+
+        public IPluginAPI LoadPlugin(string pluginName)
+        {
+            PluginLoader loader;
+            var pluginDll = Path.Combine(_currentPluginFolderPath, pluginName + ".dll");
+            if (File.Exists(pluginDll))
+            {
+                Logging.Log.Debug("Found plugin " + pluginName);
+                Logging.Log.Debug("Try to initialize plugin " + pluginName);
+                loader = PluginLoader.CreateFromAssemblyFile(
+                    pluginDll,
+                    sharedTypes: new[] {
                                                     typeof(IPluginAPI),
                                                     typeof(IPluginHostAPI),
+                                                    typeof(IPluginManager),
                                                     typeof(IC2SMessageHandler),
                                                     typeof(ICoreEventHandler),
                                                     typeof(BaseMessage),
                                                     typeof(CoreEvent)
-                                            }
-                    );
-                    loaders.Add(loader);
-                }
+                                        }
+                );
+            }
+            else
+            {
+                throw new Exception("specified plugin is not found");
             }
 
-            // Create an instance of module types
-            foreach (var loader in loaders)
-            {
-                foreach (var pluginType in loader
+            IPluginAPI plugin = null;
+            foreach (var pluginType in loader
                     .LoadDefaultAssembly()
                     .GetTypes()
                     .Where(t => typeof(IPluginAPI).IsAssignableFrom(t) && !t.IsAbstract))
-                {
-                    // This assumes the implementation of IPlugin has a parameterless constructor
-                    IPluginAPI plugin = (IPluginAPI)Activator.CreateInstance(pluginType);
-                    Logging.Log.Debug($"Created plugin instance '{plugin.GetPluginUniqueName()}'.");
-                    plugin.Initialize(_pluginHostAPI);
-                    _plugins.Add(plugin);
-                }
+            {
+                // This assumes the implementation of IPlugin has a parameterless constructor
+                plugin = (IPluginAPI)Activator.CreateInstance(pluginType);
+                Logging.Log.Debug($"Created plugin instance '{plugin.GetPluginUniqueName()}'.");
+                plugin.PreInitialize(this);
+                plugin.Initialize(_pluginHostAPI);
             }
+            return plugin;
+        }
+
+        public dynamic Depends(IPluginAPI currentPlugin, string pluginName)
+        {
+            var dependantPlugin = _plugins.GetValueOrDefault(pluginName, null);
+            if (dependantPlugin != null) return dependantPlugin.GetExportedAPI();
+            this.LoadPlugin(pluginName);
+            dependantPlugin = _plugins[pluginName];
+            return dependantPlugin.GetExportedAPI();
         }
     }
 }
