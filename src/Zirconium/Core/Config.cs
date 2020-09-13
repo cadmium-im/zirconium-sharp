@@ -21,6 +21,8 @@ namespace Zirconium.Core
 
         // Configurations of plugins
         public Dictionary<string, dynamic> Plugins { get; set; }
+        
+        public string AuthenticationProvider { get; set; }
     }
 
     public class Websocket

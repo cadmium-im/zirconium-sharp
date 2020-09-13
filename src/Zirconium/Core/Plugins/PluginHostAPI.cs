@@ -1,5 +1,4 @@
 using System.Collections.Generic;
-using System;
 using Newtonsoft.Json;
 using Zirconium.Core.Models;
 using Zirconium.Core.Plugins.Interfaces;
@@ -15,6 +14,10 @@ namespace Zirconium.Core.Plugins
         {
             _router = router;
             _app = app;
+        }
+
+        public void ProvideAuth(IAuthProvider provider) {
+            _app.AuthManager.AddAuthProvider(provider);
         }
 
         public void FireEvent(CoreEvent coreEvent)

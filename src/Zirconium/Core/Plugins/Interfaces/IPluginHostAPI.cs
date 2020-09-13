@@ -15,5 +15,6 @@ namespace Zirconium.Core.Plugins.Interfaces
         void SendMessage(ConnectionInfo connInfo, BaseMessage message);
         dynamic GetSettings(IPluginAPI plugin);
         dynamic GetSettings(string pluginName);
+        void ProvideAuth(IAuthProvider provider);
     }
 }

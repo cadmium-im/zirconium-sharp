@@ -62,13 +62,14 @@ namespace Zirconium.Core.Plugins
                 loader = PluginLoader.CreateFromAssemblyFile(
                     pluginDll,
                     sharedTypes: new[] {
-                                                    typeof(IPluginAPI),
-                                                    typeof(IPluginHostAPI),
-                                                    typeof(IPluginManager),
-                                                    typeof(IC2SMessageHandler),
-                                                    typeof(ICoreEventHandler),
-                                                    typeof(BaseMessage),
-                                                    typeof(CoreEvent)
+                                            typeof(IPluginAPI),
+                                            typeof(IPluginHostAPI),
+                                            typeof(IPluginManager),
+                                            typeof(IAuthProvider),
+                                            typeof(IC2SMessageHandler),
+                                            typeof(ICoreEventHandler),
+                                            typeof(BaseMessage),
+                                            typeof(CoreEvent)
                                         }
                 );
             }
