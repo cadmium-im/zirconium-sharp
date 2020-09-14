@@ -66,6 +66,7 @@ namespace Zirconium.Core.Plugins
                                             typeof(IPluginHostAPI),
                                             typeof(IPluginManager),
                                             typeof(IAuthProvider),
+                                            typeof(IExposedSessionManager),
                                             typeof(IC2SMessageHandler),
                                             typeof(ICoreEventHandler),
                                             typeof(BaseMessage),

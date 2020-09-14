@@ -12,9 +12,10 @@ namespace Zirconium.Core.Plugins.Interfaces
         string GenerateAuthToken(string entityID, string deviceID, int tokenExpirationMillis);
         string[] GetServerDomains();
         string GetServerID();
-        void SendMessage(ConnectionInfo connInfo, BaseMessage message);
+        void SendMessage(Session session, BaseMessage message);
         dynamic GetSettings(IPluginAPI plugin);
         dynamic GetSettings(string pluginName);
         void ProvideAuth(IAuthProvider provider);
+        IExposedSessionManager GetSessionManager();
     }
 }

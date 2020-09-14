@@ -23,7 +23,7 @@ namespace Zirconium.Core
             _coreEventsHandlers = new Dictionary<string, List<ICoreEventHandler>>();
         }
 
-        public void RouteMessage(ConnectionInfo connInfo, BaseMessage message)
+        public void RouteMessage(Session session, BaseMessage message)
         {
             var handlers = _c2sMessageHandlers.GetValueOrDefault(message.MessageType, null);
             if (handlers == null)
@@ -37,7 +37,7 @@ namespace Zirconium.Core
                 );
                 msg.From = _app.Config.ServerID;
                 var serializedMsg = JsonConvert.SerializeObject(msg);
-                connInfo.ConnectionHandler.SendMessage(serializedMsg);
+                session.ConnectionHandler.SendMessage(serializedMsg);
                 return;
             }
             foreach (var h in handlers)
@@ -49,7 +49,7 @@ namespace Zirconium.Core
                     {
                         hash = shaM.ComputeHash(message.AuthToken.ToByteArray()).ConvertToString();
                     }
-                    if (connInfo.LastTokenHash != hash)
+                    if (session.LastTokenHash != hash)
                     {
                         JWTPayload tokenPayload;
                         try
@@ -68,19 +68,19 @@ namespace Zirconium.Core
                                     new Dictionary<string, object>()
                                 )
                             );
-                            connInfo.ConnectionHandler.SendMessage(serializedMsg);
+                            session.ConnectionHandler.SendMessage(serializedMsg);
                             return;
                         }
 
-                        connInfo.LastTokenHash = hash;
-                        connInfo.LastTokenPayload = tokenPayload;
+                        session.LastTokenHash = hash;
+                        session.LastTokenPayload = tokenPayload;
                     }
                 }
 
                 Task.Run(() =>
                 {
                     // probably need to wrap whole foreach body, not only HandleMessage call - need to investigate
-                    h.HandleMessage(connInfo, message);
+                    h.HandleMessage(session, message);
                 });
             }
         }

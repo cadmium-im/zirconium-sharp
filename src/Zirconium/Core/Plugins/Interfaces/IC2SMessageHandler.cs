@@ -4,7 +4,7 @@ namespace Zirconium.Core.Plugins.Interfaces
 {
     public interface IC2SMessageHandler {
         string GetHandlingMessageType();
-        void HandleMessage(ConnectionInfo connInfo, BaseMessage message);   
+        void HandleMessage(Session session, BaseMessage message);   
         bool IsAuthorizationRequired();
         string GetHandlerUniqueID();
     }

@@ -23,6 +23,7 @@ namespace Zirconium.Core
             _app.SessionManager.DeleteSession(ID);
             Logging.Log.Info($"Connection {ID} was closed (reason: {e.Reason})");
             // TODO implement closing connection
+            
         }
 
         protected override void OnError(ErrorEventArgs e)
@@ -37,7 +38,7 @@ namespace Zirconium.Core
                 if (e.IsText)
                 {
                     var msg = JsonConvert.DeserializeObject<BaseMessage>(e.Data);
-                    _app.Router.RouteMessage(_app.SessionManager.GetConnectionInfo(ID), msg);
+                    _app.Router.RouteMessage(_app.SessionManager.GetSession(ID), msg);
                 }
                 else
                 {
@@ -69,16 +70,20 @@ namespace Zirconium.Core
         protected override void OnOpen()
         {
             var ip = Context.UserEndPoint.Address;
-            var connInfo = new ConnectionInfo();
-            connInfo.ClientAddress = ip;
-            connInfo.ConnectionHandler = this;
-            _app.SessionManager.AddSession(ID, connInfo);
-            Logging.Log.Info($"Connection {ID} was created");
+            var session = new Session();
+            session.ClientAddress = ip;
+            session.ConnectionHandler = this;
+            _app.SessionManager.AddSession(this.ID, session);
+            Logging.Log.Info($"Connection {this.ID} was created");
         }
 
         public void SendMessage(string message)
         {
             this.Send(message);
+        }
+
+        public void CloseConnection() {
+            this.Sessions.CloseSession(this.ID); // TODO need to clarify if CloseSession also calls OnClose callback
         }
     }
 }

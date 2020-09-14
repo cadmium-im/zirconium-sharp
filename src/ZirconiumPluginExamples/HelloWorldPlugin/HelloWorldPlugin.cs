@@ -34,14 +34,14 @@ namespace HelloWorldPlugin
 
         public string GetHandlingMessageType() => "test";
 
-        public void HandleMessage(ConnectionInfo connInfo, BaseMessage message)
+        public void HandleMessage(Session session, BaseMessage message)
         {
             BaseMessage msg = new BaseMessage(message, true);
             msg.Payload["testProp"] = "hello world";
             msg.Ok = true;
             msg.From = hostModuleAPI.GetServerID();
             string strMsg = JsonConvert.SerializeObject(msg);
-            connInfo.ConnectionHandler.SendMessage(strMsg);
+            session.ConnectionHandler.SendMessage(strMsg);
         }
 
         public bool IsAuthorizationRequired() => false;

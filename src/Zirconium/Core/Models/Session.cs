@@ -2,7 +2,7 @@ using System.Net;
 
 namespace Zirconium.Core.Models
 {
-    public class ConnectionInfo
+    public class Session
     {
         public string LastTokenHash { get; set; }
         public JWTPayload LastTokenPayload { get; set; }

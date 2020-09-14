@@ -16,6 +16,10 @@ namespace Zirconium.Core.Plugins
             _app = app;
         }
 
+        public IExposedSessionManager GetSessionManager() {
+            return _app.SessionManager;
+        }
+
         public void ProvideAuth(IAuthProvider provider) {
             _app.AuthManager.AddAuthProvider(provider);
         }
@@ -60,9 +64,9 @@ namespace Zirconium.Core.Plugins
             _router.AddCoreEventHandler(handler.GetHandlingEventType(), handler);
         }
 
-        public void SendMessage(ConnectionInfo connInfo, BaseMessage message)
+        public void SendMessage(Session session, BaseMessage message)
         {
-            connInfo.ConnectionHandler.SendMessage(JsonConvert.SerializeObject(message));
+            session.ConnectionHandler.SendMessage(JsonConvert.SerializeObject(message));
         }
 
         public void Unhook(IC2SMessageHandler handler)
