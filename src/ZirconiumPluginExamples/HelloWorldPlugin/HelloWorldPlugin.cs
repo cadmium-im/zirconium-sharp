@@ -1,4 +1,5 @@
-﻿using Newtonsoft.Json;
+﻿using System;
+using Newtonsoft.Json;
 using Zirconium.Core.Logging;
 using Zirconium.Core.Models;
 using Zirconium.Core.Plugins.Interfaces;
@@ -19,6 +20,11 @@ namespace HelloWorldPlugin
         public void PreInitialize(IPluginManager pluginManager) { }
 
         public dynamic GetExportedAPI() { return null; }
+
+        public Type[] GetExportedTypes()
+        {
+            return null;
+        }
     }
 
     internal class C2SHandler : IC2SMessageHandler
