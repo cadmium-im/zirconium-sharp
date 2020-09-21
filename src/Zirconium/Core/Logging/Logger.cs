@@ -77,7 +77,7 @@ namespace Zirconium.Core.Logging
                     break;
                 }
                 case LogType.Debug: {
-                    tagFormatter = new Formatter("DEBUG", Color.Lime);
+                    tagFormatter = new Formatter("DEBUG", Color.LightGray);
                     break;
                 }
                 default: {
