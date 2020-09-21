@@ -1,3 +1,5 @@
+using System;
+
 namespace Zirconium.Core.Plugins.Interfaces
 {
     public interface IPluginAPI
@@ -6,5 +8,6 @@ namespace Zirconium.Core.Plugins.Interfaces
         void PreInitialize(IPluginManager pluginManager);
         string GetPluginUniqueName();
         dynamic GetExportedAPI();
+        Type[] GetExportedTypes();
     }
 }

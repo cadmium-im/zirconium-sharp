@@ -2,8 +2,10 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Runtime.Loader;
 using System.Threading;
 using McMaster.NETCore.Plugins;
+using Zirconium.Core.Logging;
 using Zirconium.Core.Models;
 using Zirconium.Core.Plugins.Interfaces;
 using Zirconium.Utils;
@@ -54,7 +56,7 @@ namespace Zirconium.Core.Plugins
         public IPluginAPI LoadPlugin(string pluginName)
         {
             PluginLoader loader;
-            var pluginDll = Path.Combine(_currentPluginFolderPath, pluginName + ".dll");
+            var pluginDll = Path.Combine(_currentPluginFolderPath, pluginName, pluginName + ".dll");
             if (File.Exists(pluginDll))
             {
                 Logging.Log.Debug("Found plugin " + pluginName);
@@ -62,6 +64,7 @@ namespace Zirconium.Core.Plugins
                 loader = PluginLoader.CreateFromAssemblyFile(
                     pluginDll,
                     sharedTypes: new[] {
+                                            typeof(Log),
                                             typeof(IPluginAPI),
                                             typeof(IPluginHostAPI),
                                             typeof(IPluginManager),
@@ -71,7 +74,8 @@ namespace Zirconium.Core.Plugins
                                             typeof(ICoreEventHandler),
                                             typeof(BaseMessage),
                                             typeof(CoreEvent)
-                                        }
+                                        },
+                    config => config.PreferSharedTypes = true
                 );
             }
             else
@@ -79,15 +83,24 @@ namespace Zirconium.Core.Plugins
                 throw new Exception("specified plugin is not found");
             }
 
+            var pluginTypes = loader.LoadDefaultAssembly().GetTypes();
+
             IPluginAPI plugin = null;
-            foreach (var pluginType in loader
-                    .LoadDefaultAssembly()
-                    .GetTypes()
+            foreach (var pluginType in pluginTypes
                     .Where(t => typeof(IPluginAPI).IsAssignableFrom(t) && !t.IsAbstract))
             {
                 // This assumes the implementation of IPlugin has a parameterless constructor
                 plugin = (IPluginAPI)Activator.CreateInstance(pluginType);
                 Logging.Log.Debug($"Created plugin instance '{plugin.GetPluginUniqueName()}'.");
+                var exportedTypes = plugin.GetExportedTypes();
+                if (exportedTypes != null)
+                {
+                    foreach (var type in exportedTypes)
+                    {
+                        var path = new Uri(type.Module.Assembly.CodeBase).LocalPath;
+                        AssemblyLoadContext.Default.LoadFromAssemblyPath(path);
+                    }
+                }
                 plugin.PreInitialize(this);
                 plugin.Initialize(_pluginHostAPI);
             }
