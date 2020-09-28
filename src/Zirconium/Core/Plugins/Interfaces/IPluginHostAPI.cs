@@ -1,3 +1,4 @@
+using System.Threading.Tasks;
 using Zirconium.Core.Models;
 
 namespace Zirconium.Core.Plugins.Interfaces
@@ -17,5 +18,8 @@ namespace Zirconium.Core.Plugins.Interfaces
         dynamic GetSettings(string pluginName);
         void ProvideAuth(IAuthProvider provider);
         IExposedSessionManager GetSessionManager();
+        void RegisterIPCService(IPluginAPI plugin, dynamic service);
+        Task<dynamic> MakeIPCRequest(string pluginName, string methodName, dynamic paramsObject);
+        Task MakeIPCNotification(string pluginName, string methodName, dynamic paramsObject);
     }
 }

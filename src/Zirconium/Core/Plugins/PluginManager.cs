@@ -8,6 +8,7 @@ using McMaster.NETCore.Plugins;
 using Zirconium.Core.Logging;
 using Zirconium.Core.Models;
 using Zirconium.Core.Plugins.Interfaces;
+using Zirconium.Core.Plugins.IPC;
 using Zirconium.Utils;
 
 namespace Zirconium.Core.Plugins
@@ -73,7 +74,8 @@ namespace Zirconium.Core.Plugins
                                             typeof(IC2SMessageHandler),
                                             typeof(ICoreEventHandler),
                                             typeof(BaseMessage),
-                                            typeof(CoreEvent)
+                                            typeof(CoreEvent),
+                                            typeof(ExportedIPCMethodAttribute)
                                         },
                     config => config.PreferSharedTypes = true
                 );
@@ -92,28 +94,18 @@ namespace Zirconium.Core.Plugins
                 // This assumes the implementation of IPlugin has a parameterless constructor
                 plugin = (IPluginAPI)Activator.CreateInstance(pluginType);
                 Logging.Log.Debug($"Created plugin instance '{plugin.GetPluginUniqueName()}'.");
-                var exportedTypes = plugin.GetExportedTypes();
-                if (exportedTypes != null)
-                {
-                    foreach (var type in exportedTypes)
-                    {
-                        var path = new Uri(type.Module.Assembly.CodeBase).LocalPath;
-                        AssemblyLoadContext.Default.LoadFromAssemblyPath(path);
-                    }
-                }
                 plugin.PreInitialize(this);
                 plugin.Initialize(_pluginHostAPI);
             }
             return plugin;
         }
 
-        public dynamic Depends(IPluginAPI currentPlugin, string pluginName)
+        public void Depends(IPluginAPI currentPlugin, string pluginName)
         {
             var dependantPlugin = _plugins.GetValueOrDefault(pluginName, null);
-            if (dependantPlugin != null) return dependantPlugin.GetExportedAPI();
+            if (dependantPlugin != null) return;
             this.LoadPlugin(pluginName);
             dependantPlugin = _plugins[pluginName];
-            return dependantPlugin.GetExportedAPI();
         }
     }
 }

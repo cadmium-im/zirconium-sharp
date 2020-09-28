@@ -1,7 +1,10 @@
+using System;
 using System.Collections.Generic;
+using System.Threading.Tasks;
 using Newtonsoft.Json;
 using Zirconium.Core.Models;
 using Zirconium.Core.Plugins.Interfaces;
+using Zirconium.Core.Plugins.IPC;
 
 namespace Zirconium.Core.Plugins
 {
@@ -9,11 +12,13 @@ namespace Zirconium.Core.Plugins
     {
         private App _app;
         private Router _router;
+        private IPCRouter _ipcRouter;
 
         public PluginHostAPI(App app, Router router)
         {
             _router = router;
             _app = app;
+            _ipcRouter = new IPCRouter();
         }
 
         public IExposedSessionManager GetSessionManager() {
@@ -77,6 +82,19 @@ namespace Zirconium.Core.Plugins
         public void UnhookCoreEvent(ICoreEventHandler handler)
         {
             _router.RemoveCoreEventHandler(handler.GetHandlingEventType(), handler);
+        }
+
+        public void RegisterIPCService(IPluginAPI plugin, dynamic service)
+        {
+            _ipcRouter.RegisterIPCService(plugin.GetPluginUniqueName(), service);
+        }
+
+        public Task<dynamic> MakeIPCRequest(string pluginName, string methodName, dynamic paramsObject) {
+            return _ipcRouter.MakeRequest(pluginName, methodName, paramsObject);
+        }
+
+        public Task MakeIPCNotification(string pluginName, string methodName, dynamic paramsObject) {
+            return _ipcRouter.MakeNotif(pluginName, methodName, paramsObject);
         }
     }
 }

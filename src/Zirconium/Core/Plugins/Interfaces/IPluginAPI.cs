@@ -7,7 +7,5 @@ namespace Zirconium.Core.Plugins.Interfaces
         void Initialize(IPluginHostAPI hostModuleAPI);
         void PreInitialize(IPluginManager pluginManager);
         string GetPluginUniqueName();
-        dynamic GetExportedAPI();
-        Type[] GetExportedTypes();
     }
 }
