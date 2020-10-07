@@ -54,7 +54,7 @@ namespace Zirconium.Core.Logging
                 stFrame = st.GetFrame(2);
             }
             var dateTimeFormatter = new Formatter($"{DateTime.Now}", Color.White);
-            var frameFormatter = new Formatter($"{stFrame.GetMethod().ReflectedType.Name}", Color.DeepPink);
+            var frameFormatter = new Formatter($"{stFrame.GetMethod().ReflectedType.FullName}", Color.DeepPink);
 
             string outputMessage = "[{0}] [{1}] | [{2}]: " + message;
 
