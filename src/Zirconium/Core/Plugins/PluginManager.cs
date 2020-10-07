@@ -5,6 +5,7 @@ using System.Linq;
 using System.Runtime.Loader;
 using System.Threading;
 using McMaster.NETCore.Plugins;
+using MongoDB.Driver;
 using Zirconium.Core.Logging;
 using Zirconium.Core.Models;
 using Zirconium.Core.Plugins.Interfaces;
@@ -75,7 +76,8 @@ namespace Zirconium.Core.Plugins
                                             typeof(ICoreEventHandler),
                                             typeof(BaseMessage),
                                             typeof(CoreEvent),
-                                            typeof(ExportedIPCMethodAttribute)
+                                            typeof(ExportedIPCMethodAttribute),
+                                            typeof(IMongoDatabase)
                                         },
                     config => config.PreferSharedTypes = true
                 );

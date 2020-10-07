@@ -19,9 +19,12 @@ namespace Zirconium.Core
         // Websocket server settings
         public Websocket Websocket { get; set; }
 
+        // Database connection credentials
+        public MongoDatabaseConfig MongoDatabase { get; set; }
+
         // Configurations of plugins
         public Dictionary<string, dynamic> Plugins { get; set; }
-        
+
         public string AuthenticationProvider { get; set; }
     }
 
@@ -30,5 +33,14 @@ namespace Zirconium.Core
         public string Host { get; set; }
         public int Port { get; set; }
         public string Endpoint { get; set; }
+    }
+
+    public class MongoDatabaseConfig
+    {
+        public string Host { get; set; }
+        public int Port { get; set; }
+        public string User { get; set; }
+        public string Password { get; set; }
+        public string Database { get; set; }
     }
 }

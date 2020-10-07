@@ -1,4 +1,9 @@
-﻿using System.Dynamic;
+﻿using System.ComponentModel.DataAnnotations.Schema;
+using System.Dynamic;
+using MongoDB.Bson;
+using MongoDB.Bson.Serialization.Attributes;
+using MongoDB.Driver;
+using Zirconium.Core.Logging;
 using Zirconium.Core.Plugins.Interfaces;
 
 namespace TestMongoDB
@@ -11,24 +16,34 @@ namespace TestMongoDB
             return "TestMongoDB";
         }
 
-        public async void Initialize(IPluginHostAPI pluginHostAPI)
+        public void Initialize(IPluginHostAPI pluginHostAPI)
         {
             var tm = new TestModel();
             tm.ABC = "qweqowie";
-            dynamic paramsObject = new ExpandoObject();
-            paramsObject.ColName = "test_model";
-            paramsObject.Model = tm;
-            await pluginHostAPI.MakeIPCRequest("MongoDB", "Insert", paramsObject);
+            var db = pluginHostAPI.GetRawDatabase();
+
+            db.GetCollection<TestModel>("test_model").InsertOne(tm);
+            Log.Debug("successfully inserted the model");
+            var filter = Builders<TestModel>.Filter.Eq("ABC", "qweqowie");
+            var found = db.GetCollection<TestModel>("test_model").Find(filter).FirstOrDefault();
+            if (found != null) {
+                Log.Debug($"Found document with ABC property: {found.ABC}");
+            } else {
+                Log.Debug("Nothing found!");
+            }
         }
 
         public void PreInitialize(IPluginManager pluginManager)
         {
-            pluginManager.Depends(this, "MongoDB");
+            
         }
     }
 
     class TestModel
     {
+        [BsonId]
+        public ObjectId Id { get; set; }
+
         public string ABC { get; set; }
     }
 }

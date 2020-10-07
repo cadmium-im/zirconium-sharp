@@ -8,6 +8,9 @@
     <ProjectReference Include="../../Zirconium/Zirconium.csproj">
       <ExcludeAssets>runtime</ExcludeAssets>
     </ProjectReference>
+    <PackageReference Include="MongoDB.Bson" Version="2.10.4" />
+    <PackageReference Include="MongoDB.Driver" Version="2.10.4" />
+    <PackageReference Include="MongoDB.Driver.Core" Version="2.10.4" />
   </ItemGroup>
 
 </Project>

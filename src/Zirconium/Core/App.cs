@@ -2,6 +2,7 @@ using Zirconium.Core.Plugins;
 using Zirconium.Core.Plugins.Interfaces;
 using Zirconium.Core.Logging;
 using WebSocketSharp.Server;
+using Zirconium.Core.Database;
 
 namespace Zirconium.Core
 {
@@ -14,6 +15,7 @@ namespace Zirconium.Core
         public IPluginHostAPI PluginHostAPI { get; }
         public AuthManager AuthManager { get; }
         private WebSocketServer _websocketServer;
+        public DatabaseConnector Database { get; private set; }
 
         public App(Config config)
         {
@@ -24,6 +26,7 @@ namespace Zirconium.Core
             Router = new Router(this);
             PluginHostAPI = new PluginHostAPI(this, Router);
             AuthManager = new AuthManager(this);
+            Database = new DatabaseConnector(this);
             PluginManager = new PluginManager(PluginHostAPI);
             PluginManager.LoadPlugins(config.PluginsDirPath, config.EnabledPlugins);
             Log.Info("Zirconium is initialized successfully");
@@ -34,7 +37,8 @@ namespace Zirconium.Core
             _websocketServer.Start();
         }
 
-        public void Destroy() {
+        public void Destroy()
+        {
             Log.Info("Shutting down Zirconium...");
             _websocketServer.Stop();
         }

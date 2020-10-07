@@ -1,4 +1,5 @@
 using System.Threading.Tasks;
+using MongoDB.Driver;
 using Zirconium.Core.Models;
 
 namespace Zirconium.Core.Plugins.Interfaces
@@ -21,5 +22,6 @@ namespace Zirconium.Core.Plugins.Interfaces
         void RegisterIPCService(IPluginAPI plugin, dynamic service);
         Task<dynamic> MakeIPCRequest(string pluginName, string methodName, dynamic paramsObject);
         Task MakeIPCNotification(string pluginName, string methodName, dynamic paramsObject);
+        IMongoDatabase GetRawDatabase();
     }
 }

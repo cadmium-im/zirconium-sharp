@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
+using MongoDB.Driver;
 using Newtonsoft.Json;
 using Zirconium.Core.Models;
 using Zirconium.Core.Plugins.Interfaces;
@@ -95,6 +96,11 @@ namespace Zirconium.Core.Plugins
 
         public Task MakeIPCNotification(string pluginName, string methodName, dynamic paramsObject) {
             return _ipcRouter.MakeNotif(pluginName, methodName, paramsObject);
+        }
+
+        public IMongoDatabase GetRawDatabase()
+        {
+            return _app.Database.MongoDatabase;
         }
     }
 }
