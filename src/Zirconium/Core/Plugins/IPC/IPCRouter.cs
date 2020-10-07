@@ -1,3 +1,4 @@
+using System.Reflection;
 using System.Threading.Tasks;
 using System.Linq;
 using System;
@@ -36,7 +37,15 @@ namespace Zirconium.Core.Plugins.IPC
             return Task.Factory.StartNew<dynamic>(() =>
             {
                 var method = methodTable[pluginName].Where(x => x.MethodName == methodName).FirstOrDefault();
-                var returnValue = method.Method.Invoke(method.Service, new object[] {paramsObject});
+                object returnValue = null;
+                try
+                {
+                    returnValue = method.Method.Invoke(method.Service, new object[] { paramsObject });
+                }
+                catch (TargetInvocationException e)
+                {
+                    throw e.InnerException;
+                }
                 return returnValue;
             });
         }
@@ -46,7 +55,14 @@ namespace Zirconium.Core.Plugins.IPC
             return Task.Factory.StartNew(() =>
             {
                 var method = methodTable[pluginName].Where(x => x.MethodName == methodName).FirstOrDefault();
-                method.Method.Invoke(method.Service, paramsObject);
+                try
+                {
+                    method.Method.Invoke(method.Service, new object[] { paramsObject });
+                }
+                catch (TargetInvocationException e)
+                {
+                    throw e.InnerException;
+                }
             });
         }
     }
