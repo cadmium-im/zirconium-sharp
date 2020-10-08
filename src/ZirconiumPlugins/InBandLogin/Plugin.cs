@@ -176,7 +176,7 @@ namespace InBandLogin
                 }
                 BaseMessage reply = new BaseMessage(message, true);
                 var p = new RegisterResponsePayload();
-                p.UserID = $"@{pObj.Username}:{_pluginHostAPI.GetServerID()}";
+                p.UserID = $"@{pObj.Username}@{_pluginHostAPI.GetServerID()}";
                 if (pObj.LoginOnSuccess)
                 {
                     string deviceID = "ABCDEF"; // TODO fix device id system
