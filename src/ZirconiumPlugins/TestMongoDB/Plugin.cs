@@ -32,11 +32,6 @@ namespace TestMongoDB
                 Log.Debug("Nothing found!");
             }
         }
-
-        public void PreInitialize(IPluginManager pluginManager)
-        {
-            
-        }
     }
 
     class TestModel
