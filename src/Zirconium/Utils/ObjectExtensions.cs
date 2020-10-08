@@ -27,7 +27,7 @@ namespace Zirconium.Utils
         private static void AddPropertyToDictionary<T>(PropertyDescriptor property, object source, Dictionary<string, T> dictionary)
         {
             object value = property.GetValue(source);
-            if (IsOfType<T>(value))
+            if (value is T)
             {
                 var jsonProp = property.Attributes.OfType<JsonPropertyAttribute>().FirstOrDefault();
                 string propName;
@@ -39,13 +39,39 @@ namespace Zirconium.Utils
                 {
                     propName = jsonProp.PropertyName;
                 }
+                if (jsonProp.Required == Required.Default && value == null){
+                    return;
+                }
                 dictionary.Add(propName, (T)value);
             }
         }
 
-        private static bool IsOfType<T>(object value)
+        public static T ToObject<T>(this IDictionary<string, object> source)
+            where T : class, new()
         {
-            return value is T;
+            var someObject = new T();
+            var someObjectType = someObject.GetType();
+
+            foreach (var item in source)
+            {
+                string propName = null;
+                foreach (PropertyDescriptor prop in TypeDescriptor.GetProperties(someObject)) {
+                    var jsonProp = prop.Attributes.OfType<JsonPropertyAttribute>().FirstOrDefault();
+                    if (jsonProp != null) {
+                        if (jsonProp.PropertyName == item.Key) {
+                            propName = prop.Name;
+                        }
+                    }
+                }
+                if (propName == null) {
+                    propName = item.Key;
+                }
+                someObjectType
+                        .GetProperty(propName)
+                        .SetValue(someObject, item.Value, null);
+            }
+
+            return someObject;
         }
 
         private static void ThrowExceptionWhenSourceArgumentIsNull()
