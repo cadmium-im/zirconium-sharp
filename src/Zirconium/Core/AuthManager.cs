@@ -5,6 +5,7 @@ using JWT.Builder;
 using Newtonsoft.Json;
 using Zirconium.Utils;
 using Zirconium.Core.Plugins.Interfaces;
+using System.Linq;
 
 namespace Zirconium.Core
 {
@@ -14,13 +15,13 @@ namespace Zirconium.Core
         private string _secretString;
         private const long DEFAULT_TOKEN_EXPIRATION_TIME_HOURS = 24 * 3600000;
         private IList<IAuthProvider> _authProviders;
-        private IAuthProvider _defaultAuthProvider;
+        public IAuthProvider DefaultAuthProvider { get; private set; }
 
         public AuthManager(App app)
         {
             _app = app;
             _authProviders = new List<IAuthProvider>();
-            _defaultAuthProvider = null;
+            DefaultAuthProvider = null;
             _secretString = Guid.NewGuid().ToString();
         }
 
@@ -37,7 +38,8 @@ namespace Zirconium.Core
                 .Encode();
         }
 
-        public string CreateToken(string entityID, string deviceID) {
+        public string CreateToken(string entityID, string deviceID)
+        {
             return CreateToken(entityID, deviceID, DEFAULT_TOKEN_EXPIRATION_TIME_HOURS);
         }
 
@@ -49,17 +51,23 @@ namespace Zirconium.Core
                 .MustVerifySignature()
                 .Decode(token);
             var payload = JsonConvert.DeserializeObject<JWTPayload>(jsonPayload);
-            if (_defaultAuthProvider == null) {
+            if (DefaultAuthProvider == null)
+            {
                 throw new Exception("Default auth provider isn't specified");
             }
-            var validToken = _defaultAuthProvider.TestToken(token, payload);
+            var validToken = DefaultAuthProvider.TestToken(token, payload);
             if (!validToken)
                 return null;
             return payload;
         }
 
-        public void AddAuthProvider(IAuthProvider provider) {
+        public void AddAuthProvider(IAuthProvider provider)
+        {
             _authProviders.Add(provider);
+        }
+
+        public void SetDefaultAuthProvider() {
+            DefaultAuthProvider = _authProviders.Where(x => x.GetAuthProviderName() == _app.Config.AuthenticationProvider).FirstOrDefault();
         }
     }
 }

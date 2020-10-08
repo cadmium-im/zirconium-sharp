@@ -12,12 +12,14 @@ namespace Zirconium.Core.Plugins.Interfaces
         void UnhookCoreEvent(ICoreEventHandler handler);
         void FireEvent(CoreEvent coreEvent);
         string GenerateAuthToken(string entityID, string deviceID, int tokenExpirationMillis);
+        string GenerateAuthToken(string entityID, string deviceID);
         string[] GetServerDomains();
         string GetServerID();
         void SendMessage(Session session, BaseMessage message);
         dynamic GetSettings(IPluginAPI plugin);
         dynamic GetSettings(string pluginName);
         void ProvideAuth(IAuthProvider provider);
+        IAuthProvider GetAuthProvider();
         IExposedSessionManager GetSessionManager();
         void RegisterIPCService(IPluginAPI plugin, dynamic service);
         Task<dynamic> MakeIPCRequest(string pluginName, string methodName, dynamic paramsObject);

@@ -29,6 +29,7 @@ namespace Zirconium.Core
             Database = new DatabaseConnector(this);
             PluginManager = new PluginManager(PluginHostAPI);
             PluginManager.LoadPlugins(config.PluginsDirPath, config.EnabledPlugins);
+            AuthManager.SetDefaultAuthProvider();
             Log.Info("Zirconium is initialized successfully");
         }
 

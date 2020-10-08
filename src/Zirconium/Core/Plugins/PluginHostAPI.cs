@@ -102,5 +102,15 @@ namespace Zirconium.Core.Plugins
         {
             return _app.Database.MongoDatabase;
         }
+
+        public IAuthProvider GetAuthProvider()
+        {
+            return _app.AuthManager.DefaultAuthProvider;
+        }
+
+        public string GenerateAuthToken(string entityID, string deviceID)
+        {
+            return _app.AuthManager.CreateToken(entityID, deviceID);
+        }
     }
 }
