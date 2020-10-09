@@ -82,6 +82,11 @@ namespace Zirconium.Core
             this.Send(message);
         }
 
+        public void SendMessage(BaseMessage message)
+        {
+            this.Send(JsonConvert.SerializeObject(message));
+        }
+
         public void CloseConnection() {
             this.Sessions.CloseSession(this.ID); // TODO need to clarify if CloseSession also calls OnClose callback
         }

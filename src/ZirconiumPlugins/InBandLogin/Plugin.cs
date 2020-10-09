@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
 using Newtonsoft.Json;
-using Zirconium.Core.Logging;
 using Zirconium.Core.Models;
 using Zirconium.Core.Plugins.Interfaces;
 using Zirconium.Utils;
@@ -98,8 +97,7 @@ namespace InBandLogin
                     p.DeviceID = deviceID;
                     reply.Payload = p.ToDictionary();
                     reply.Ok = true;
-                    var msg = JsonConvert.SerializeObject(reply);
-                    session.ConnectionHandler.SendMessage(msg);
+                    session.ConnectionHandler.SendMessage(reply);
                 }
                 else
                 {
@@ -108,9 +106,8 @@ namespace InBandLogin
                                     errID,
                                     "Username/password isn't valid",
                                     new Dictionary<string, object>()
-                                ).ToDictionary();
-                    var msg = JsonConvert.SerializeObject(reply);
-                    session.ConnectionHandler.SendMessage(msg);
+                                );
+                    session.ConnectionHandler.SendMessage(reply);
                 }
             }
 
@@ -170,8 +167,7 @@ namespace InBandLogin
                                         new Dictionary<string, object>()
                                     );
                     }
-                    var errorMsg = JsonConvert.SerializeObject(errorReply);
-                    session.ConnectionHandler.SendMessage(errorMsg);
+                    session.ConnectionHandler.SendMessage(errorReply);
                     return;
                 }
                 BaseMessage reply = new BaseMessage(message, true);
@@ -185,8 +181,7 @@ namespace InBandLogin
                 }
                 reply.Payload = p.ToDictionary();
                 reply.Ok = true;
-                var msg = JsonConvert.SerializeObject(reply);
-                session.ConnectionHandler.SendMessage(msg);
+                session.ConnectionHandler.SendMessage(reply);
             }
 
             public bool IsAuthorizationRequired()
