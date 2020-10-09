@@ -16,15 +16,6 @@ namespace HelloWorldPlugin
             hostModuleAPI.Hook(handler);
             Log.Debug("plugin is initialized");
         }
-
-        public void PreInitialize(IPluginManager pluginManager) { }
-
-        public dynamic GetExportedAPI() { return null; }
-
-        public Type[] GetExportedTypes()
-        {
-            return null;
-        }
     }
 
     internal class C2SHandler : IC2SMessageHandler
@@ -46,8 +37,7 @@ namespace HelloWorldPlugin
             msg.Payload["testProp"] = "hello world";
             msg.Ok = true;
             msg.From = hostModuleAPI.GetServerID();
-            string strMsg = JsonConvert.SerializeObject(msg);
-            session.ConnectionHandler.SendMessage(strMsg);
+            session.ConnectionHandler.SendMessage(msg);
         }
 
         public bool IsAuthorizationRequired() => false;
