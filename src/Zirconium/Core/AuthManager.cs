@@ -1,9 +1,5 @@
 using System.Collections.Generic;
 using System;
-using JWT.Algorithms;
-using JWT.Builder;
-using Newtonsoft.Json;
-using Zirconium.Utils;
 using Zirconium.Core.Plugins.Interfaces;
 using System.Linq;
 
@@ -27,15 +23,8 @@ namespace Zirconium.Core
 
         public string CreateToken(string entityID, string deviceID, long tokenExpirationMillis)
         {
-            JWTPayload payload = new JWTPayload();
-            payload.DeviceID = deviceID;
-            payload.EntityID = entityID;
-            return new JwtBuilder()
-                .WithAlgorithm(new HMACSHA256Algorithm()) // symmetric
-                .WithSecret(_secretString)
-                .AddClaim("exp", DateTimeOffset.UtcNow.AddMilliseconds(tokenExpirationMillis).ToUnixTimeSeconds())
-                .AddClaims(payload.ToDictionary())
-                .Encode();
+            if (DefaultAuthProvider == null) throw new Exception("Default auth provider isn't specified");
+            return DefaultAuthProvider.CreateAuthToken(entityID, deviceID, tokenExpirationMillis);
         }
 
         public string CreateToken(string entityID, string deviceID)
@@ -43,22 +32,10 @@ namespace Zirconium.Core
             return CreateToken(entityID, deviceID, DEFAULT_TOKEN_EXPIRATION_TIME_HOURS);
         }
 
-        public JWTPayload ValidateToken(string token)
+        public SessionAuthData ValidateToken(string token)
         {
-            var jsonPayload = new JwtBuilder()
-                .WithAlgorithm(new HMACSHA256Algorithm()) // symmetric
-                .WithSecret(_secretString)
-                .MustVerifySignature()
-                .Decode(token);
-            var payload = JsonConvert.DeserializeObject<JWTPayload>(jsonPayload);
-            if (DefaultAuthProvider == null)
-            {
-                throw new Exception("Default auth provider isn't specified");
-            }
-            var validToken = DefaultAuthProvider.TestToken(token, payload);
-            if (!validToken)
-                return null;
-            return payload;
+            if (DefaultAuthProvider == null) throw new Exception("Default auth provider isn't specified");
+            return DefaultAuthProvider.TestToken(token);
         }
 
         public void AddAuthProvider(IAuthProvider provider)

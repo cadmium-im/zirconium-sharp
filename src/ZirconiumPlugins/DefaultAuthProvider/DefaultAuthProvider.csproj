@@ -10,5 +10,6 @@
     </ProjectReference>
 
     <PackageReference Include="Konscious.Security.Cryptography.Argon2" Version="1.2.1" />
+    <PackageReference Include="JWT" Version="7.2.1" />
   </ItemGroup>
 </Project>

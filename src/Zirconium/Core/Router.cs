@@ -51,7 +51,7 @@ namespace Zirconium.Core
                     }
                     if (session.LastTokenHash != hash)
                     {
-                        JWTPayload tokenPayload;
+                        SessionAuthData tokenPayload;
                         try
                         {
                             tokenPayload = _app.AuthManager.ValidateToken(message.AuthToken);

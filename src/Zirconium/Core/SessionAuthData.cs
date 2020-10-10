@@ -1,13 +1,8 @@
-using Newtonsoft.Json;
-
 namespace Zirconium.Core
 {
-    public class JWTPayload
+    public class SessionAuthData
     {
-        [JsonProperty("entityID")]
         public string EntityID { get; set; }
-
-        [JsonProperty("deviceID")]
         public string DeviceID { get; set; }
     }
 }

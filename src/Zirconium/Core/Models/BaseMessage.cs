@@ -1,3 +1,5 @@
+using System;
+using System.Linq;
 using System.Collections.Generic;
 using Newtonsoft.Json;
 
@@ -15,7 +17,7 @@ namespace Zirconium.Core.Models
         public string From { get; set; }
 
         [JsonProperty("to", NullValueHandling = NullValueHandling.Ignore)]
-        public string To { get; set; }
+        public string[] To { get; set; }
 
         [JsonProperty("ok")]
         public bool Ok { get; set; }
@@ -26,28 +28,31 @@ namespace Zirconium.Core.Models
         [JsonProperty("payload")]
         public IDictionary<string, object> Payload { get; set; }
 
-        public BaseMessage() { }
-
-        public BaseMessage(BaseMessage message, bool reply)
-        {
+        public BaseMessage() { 
             Payload = new Dictionary<string, object>();
+            ID = Guid.NewGuid().ToString();
+        }
+
+        public BaseMessage(BaseMessage message, bool reply) : this()
+        {
             if (message != null)
             {
                 ID = message.ID;
                 MessageType = message.MessageType;
                 if (reply)
                 {
-                    From = message.To;
-                    To = message.From;
+                    // TODO probably need to fix it
+                    From = message.To.First();
+                    To = new string[] { message.From };
                 }
                 else
                 {
                     From = message.From;
                     To = message.To;
+                    AuthToken = message.AuthToken;
                 }
 
                 Ok = message.Ok;
-                AuthToken = message.AuthToken;
                 Payload = message.Payload;
             }
         }
