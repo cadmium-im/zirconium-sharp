@@ -45,37 +45,28 @@ namespace Zirconium.Core
             {
                 if (h.IsAuthorizationRequired())
                 {
-                    string hash;
-                    using (SHA512 shaM = new SHA512Managed())
+                    SessionAuthData tokenPayload;
+                    try
                     {
-                        hash = shaM.ComputeHash(message.AuthToken.ToByteArray()).ConvertToString();
+                        tokenPayload = _app.AuthManager.ValidateToken(message.AuthToken);
                     }
-                    if (session.LastTokenHash != hash)
+                    catch (Exception e)
                     {
-                        SessionAuthData tokenPayload;
-                        try
-                        {
-                            tokenPayload = _app.AuthManager.ValidateToken(message.AuthToken);
-                        }
-                        catch (Exception e)
-                        {
-                            Log.Warning(e.Message);
-                            var errorMsg = OtherUtils.GenerateProtocolError(
-                                                                message,
-                                                                "unauthorized",
-                                                                "Unauthorized access",
-                                                                new Dictionary<string, object>()
-                                                            );
-                            errorMsg.From = _app.Config.ServerID;
-                            var serializedMsg = JsonConvert.SerializeObject(errorMsg);
+                        Log.Warning(e.Message);
+                        var errorMsg = OtherUtils.GenerateProtocolError(
+                                                            message,
+                                                            "unauthorized",
+                                                            "Unauthorized access",
+                                                            new Dictionary<string, object>()
+                                                        );
+                        errorMsg.From = _app.Config.ServerID;
+                        var serializedMsg = JsonConvert.SerializeObject(errorMsg);
 
-                            session.ConnectionHandler.SendMessage(serializedMsg);
-                            return;
-                        }
-
-                        session.LastTokenHash = hash;
-                        session.LastTokenPayload = tokenPayload;
+                        session.LastTokenPayload = null;
+                        session.ConnectionHandler.SendMessage(serializedMsg);
+                        return;
                     }
+                    session.LastTokenPayload = tokenPayload;
                 }
 
                 var task = Task.Run(() =>
@@ -85,9 +76,12 @@ namespace Zirconium.Core
                 });
                 handlerTasks.Add(task);
             }
-            try {
+            try
+            {
                 Task.WaitAll(handlerTasks.ToArray());
-            } catch (Exception e) {
+            }
+            catch (Exception e)
+            {
                 Log.Error(e.ToString());
             }
         }
