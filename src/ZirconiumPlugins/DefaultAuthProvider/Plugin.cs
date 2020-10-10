@@ -103,7 +103,7 @@ namespace DefaultAuthProvider
         {
             SessionAuthData payload = new SessionAuthData();
             payload.DeviceID = deviceID;
-            payload.EntityID = entityID;
+            payload.EntityID = new string[] { entityID };
             return new JwtBuilder()
                 .WithAlgorithm(new HMACSHA256Algorithm()) // symmetric
                 .WithSecret(this.jwtSecret)
