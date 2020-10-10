@@ -40,6 +40,7 @@ namespace Zirconium.Core
                 session.ConnectionHandler.SendMessage(serializedMsg);
                 return;
             }
+            var handlerTasks = new List<Task>();
             foreach (var h in handlers)
             {
                 if (h.IsAuthorizationRequired())
@@ -59,15 +60,15 @@ namespace Zirconium.Core
                         catch (Exception e)
                         {
                             Log.Warning(e.Message);
+                            var errorMsg = OtherUtils.GenerateProtocolError(
+                                                                message,
+                                                                "unauthorized",
+                                                                "Unauthorized access",
+                                                                new Dictionary<string, object>()
+                                                            );
+                            errorMsg.From = _app.Config.ServerID;
+                            var serializedMsg = JsonConvert.SerializeObject(errorMsg);
 
-                            var serializedMsg = JsonConvert.SerializeObject(
-                                OtherUtils.GenerateProtocolError(
-                                    message,
-                                    "unauthorized",
-                                    "Unauthorized access",
-                                    new Dictionary<string, object>()
-                                )
-                            );
                             session.ConnectionHandler.SendMessage(serializedMsg);
                             return;
                         }
@@ -77,11 +78,17 @@ namespace Zirconium.Core
                     }
                 }
 
-                Task.Run(() =>
+                var task = Task.Run(() =>
                 {
                     // probably need to wrap whole foreach body, not only HandleMessage call - need to investigate
                     h.HandleMessage(session, message);
                 });
+                handlerTasks.Add(task);
+            }
+            try {
+                Task.WaitAll(handlerTasks.ToArray());
+            } catch (Exception e) {
+                Log.Error(e.ToString());
             }
         }
 
