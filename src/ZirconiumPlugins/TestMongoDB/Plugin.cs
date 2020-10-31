@@ -16,11 +16,11 @@ namespace TestMongoDB
             return "TestMongoDB";
         }
 
-        public void Initialize(IPluginHostAPI pluginHostAPI)
+        public void Initialize(IPluginHostAPI pluginHost)
         {
             var tm = new TestModel();
             tm.ABC = "qweqowie";
-            var db = pluginHostAPI.GetRawDatabase();
+            var db = pluginHost.GetRawDatabase();
 
             db.GetCollection<TestModel>("test_model").InsertOne(tm);
             Log.Debug("successfully inserted the model");

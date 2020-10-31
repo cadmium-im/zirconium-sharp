@@ -12,9 +12,9 @@ namespace BasicChat
     {
         public string GetPluginUniqueName() => "BasicChat";
 
-        public void Initialize(IPluginHostAPI pluginHostAPI)
+        public void Initialize(IPluginHostAPI pluginHost)
         {
-            pluginHostAPI.Hook(new ChatMessageRouterC2SHandler(pluginHostAPI));
+            pluginHost.Hook(new ChatMessageRouterC2SHandler(pluginHost));
         }
     }
 

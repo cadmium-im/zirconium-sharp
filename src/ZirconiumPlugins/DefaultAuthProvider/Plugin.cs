@@ -19,11 +19,11 @@ namespace DefaultAuthProvider
             return "DefaultAuthProvider";
         }
 
-        public void Initialize(IPluginHostAPI hostModuleAPI)
+        public void Initialize(IPluginHostAPI pluginHost)
         {
-            var db = hostModuleAPI.GetRawDatabase();
-            var jwtSecret = hostModuleAPI.GetSettings(this)["JWTSecret"];
-            hostModuleAPI.ProvideAuth(new DefaultAuthProvider(db, jwtSecret));
+            var db = pluginHost.GetRawDatabase();
+            var jwtSecret = pluginHost.GetSettings(this)["JWTSecret"];
+            pluginHost.ProvideAuth(new DefaultAuthProvider(db, jwtSecret));
         }
     }
 

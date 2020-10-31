@@ -58,9 +58,9 @@ namespace InBandLogin
             return "InBandLogin";
         }
 
-        public void Initialize(IPluginHostAPI hostModuleAPI)
+        public void Initialize(IPluginHostAPI pluginHost)
         {
-            this.pluginHostAPI = hostModuleAPI;
+            this.pluginHostAPI = pluginHost;
             pluginHostAPI.Hook(new LoginC2SHandler(pluginHostAPI));
             pluginHostAPI.Hook(new RegisterC2SHandler(pluginHostAPI));
         }
