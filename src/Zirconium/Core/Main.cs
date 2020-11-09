@@ -2,7 +2,7 @@
 using System.Threading;
 using CommandLine;
 using Nett;
-using Zirconium.Core.Logging;
+using Log4Sharp;
 
 namespace Zirconium.Core
 {
@@ -17,6 +17,7 @@ namespace Zirconium.Core
 
         static void Main(string[] args)
         {
+            Log.SetLogLevel(LogLevel.Debug);
             string configPath = null;
             Parser.Default.ParseArguments<RunOptions>(args)
                    .WithParsed<RunOptions>(o =>

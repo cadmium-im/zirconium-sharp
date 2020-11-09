@@ -3,7 +3,7 @@ using System.Dynamic;
 using MongoDB.Bson;
 using MongoDB.Bson.Serialization.Attributes;
 using MongoDB.Driver;
-using Zirconium.Core.Logging;
+using Log4Sharp;
 using Zirconium.Core.Plugins.Interfaces;
 
 namespace TestMongoDB

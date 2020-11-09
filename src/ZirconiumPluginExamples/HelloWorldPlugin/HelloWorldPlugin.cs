@@ -1,6 +1,6 @@
 ﻿using System;
 using Newtonsoft.Json;
-using Zirconium.Core.Logging;
+using Log4Sharp;
 using Zirconium.Core.Models;
 using Zirconium.Core.Plugins.Interfaces;
 

@@ -4,7 +4,7 @@ using System.Collections.Generic;
 using Zirconium.Core.Models;
 using Zirconium.Core.Plugins.Interfaces;
 using Zirconium.Utils;
-using Zirconium.Core.Logging;
+using Log4Sharp;
 using Newtonsoft.Json;
 using System.Security.Cryptography;
 

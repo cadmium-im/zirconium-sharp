@@ -4,7 +4,7 @@ using Newtonsoft.Json;
 using Zirconium.Core.Models;
 using Zirconium.Core.Plugins.Interfaces;
 using Zirconium.Utils;
-using Zirconium.Core.Logging;
+using Log4Sharp;
 
 namespace BasicChat
 {

@@ -1,5 +1,5 @@
 using MongoDB.Driver;
-using Zirconium.Core.Logging;
+using Log4Sharp;
 
 namespace Zirconium.Core.Database
 {

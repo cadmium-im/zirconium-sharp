@@ -1,6 +1,6 @@
 using Zirconium.Core.Plugins;
 using Zirconium.Core.Plugins.Interfaces;
-using Zirconium.Core.Logging;
+using Log4Sharp;
 using WebSocketSharp.Server;
 using Zirconium.Core.Database;
 

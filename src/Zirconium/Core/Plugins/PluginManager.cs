@@ -2,11 +2,10 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-using System.Runtime.Loader;
 using System.Threading;
+using Log4Sharp;
 using McMaster.NETCore.Plugins;
 using MongoDB.Driver;
-using Zirconium.Core.Logging;
 using Zirconium.Core.Models;
 using Zirconium.Core.Plugins.Interfaces;
 using Zirconium.Core.Plugins.IPC;
@@ -34,7 +33,7 @@ namespace Zirconium.Core.Plugins
             var loaders = new List<PluginLoader>();
             if (folderPath == "")
             {
-                Logging.Log.Warning("Plugins folder path is not specified!");
+                Log.Warning("Plugins folder path is not specified!");
                 return;
             }
 
@@ -61,8 +60,8 @@ namespace Zirconium.Core.Plugins
             var pluginDll = Path.Combine(_currentPluginFolderPath, pluginName, pluginName + ".dll");
             if (File.Exists(pluginDll))
             {
-                Logging.Log.Debug("Found plugin " + pluginName);
-                Logging.Log.Debug("Try to initialize plugin " + pluginName);
+                Log.Debug("Found plugin " + pluginName);
+                Log.Debug("Trying to initialize plugin " + pluginName);
                 loader = PluginLoader.CreateFromAssemblyFile(
                     pluginDll,
                     sharedTypes: new[] {
@@ -95,7 +94,7 @@ namespace Zirconium.Core.Plugins
             {
                 // This assumes the implementation of IPlugin has a parameterless constructor
                 plugin = (IPluginAPI)Activator.CreateInstance(pluginType);
-                Logging.Log.Debug($"Created plugin instance '{plugin.GetPluginUniqueName()}'.");
+                Log.Info($"Plugin '{plugin.GetPluginUniqueName()}' initialized successfully");
                 plugin.PreInitialize(this);
                 plugin.Initialize(_pluginHostAPI);
             }

@@ -4,3 +4,4 @@ obj
 /.plugins
 /src/ThirdPartyPlugins
 .idea
+*.sln

@@ -21,14 +21,14 @@ namespace Zirconium.Core
         protected override void OnClose(CloseEventArgs e)
         {
             _app.SessionManager.DeleteSession(ID);
-            Logging.Log.Info($"Connection {ID} was closed (reason: {e.Reason})");
+            Log.Info($"Connection {ID} was closed (reason: {e.Reason})");
             // TODO implement closing connection
             
         }
 
         protected override void OnError(ErrorEventArgs e)
         {
-            Logging.Log.Error($"Error occurred: {e.Exception}");
+            Log.Error($"Error occurred: {e.Exception}");
         }
 
         protected override void OnMessage(MessageEventArgs e)
@@ -74,7 +74,7 @@ namespace Zirconium.Core
             session.ClientAddress = ip;
             session.ConnectionHandler = this;
             _app.SessionManager.AddSession(this.ID, session);
-            Logging.Log.Info($"Connection {this.ID} was created");
+            Log.Info($"Connection {this.ID} was created");
         }
 
         public void SendMessage(string message)
