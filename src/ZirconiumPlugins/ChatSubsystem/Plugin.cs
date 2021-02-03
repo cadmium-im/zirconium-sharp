@@ -6,11 +6,11 @@ using Zirconium.Core.Plugins.Interfaces;
 using Zirconium.Utils;
 using Log4Sharp;
 
-namespace BasicChat
+namespace ChatSubsystem
 {
-    internal class BasicChat : IPluginAPI
+    internal class ChatSubsystemPlugin : IPluginAPI
     {
-        public string GetPluginUniqueName() => "BasicChat";
+        public string GetPluginUniqueName() => "ChatSubsystem";
 
         public void Initialize(IPluginHostAPI pluginHost)
         {

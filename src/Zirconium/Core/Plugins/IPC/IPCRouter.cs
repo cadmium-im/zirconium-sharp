@@ -36,11 +36,11 @@ namespace Zirconium.Core.Plugins.IPC
         {
             return Task.Factory.StartNew<dynamic>(() =>
             {
-                var method = methodTable[pluginName].Where(x => x.MethodName == methodName).FirstOrDefault();
+                var method = methodTable[pluginName].FirstOrDefault(x => x.MethodName == methodName);
                 object returnValue = null;
                 try
                 {
-                    returnValue = method.Method.Invoke(method.Service, new object[] { paramsObject });
+                    returnValue = method?.Method.Invoke(method.Service, new object[] { paramsObject });
                 }
                 catch (TargetInvocationException e)
                 {

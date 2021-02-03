@@ -3,6 +3,7 @@
   <PropertyGroup>
     <TargetFramework>netcoreapp3.1</TargetFramework>
     <BuildProjectReferences>false</BuildProjectReferences>
+    <RootNamespace>ChatSubsystem</RootNamespace>
   </PropertyGroup>
 
   <ItemGroup>
