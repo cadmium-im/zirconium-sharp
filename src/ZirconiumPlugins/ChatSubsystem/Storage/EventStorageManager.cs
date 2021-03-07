@@ -43,8 +43,23 @@ namespace ChatSubsystem.Storage
                 await events.InsertOneAsync(e);
                 return;
             }
-            // TODO link to previous events in the room
-            res.PrevID = res.Id;
+            e.PrevID = res.Id;
+            
+            connectToField = (FieldDefinition<Event, EntityID>)"PrevEvents";
+            var opts = new AggregateGraphLookupOptions<Event, Event, EventWithChildren>()
+            {
+                RestrictSearchWithMatch = "{ ChatId: "+e.ChatId+" }"
+            };
+            res = await events.Aggregate()
+                .GraphLookup(events, connectFromField, connectToField, startWith, @as, opts)
+                .Match("{ Children: { $size: 0 } }").FirstOrDefaultAsync();
+            if (res == null)
+            {
+                await events.InsertOneAsync(e);
+                return;
+            }
+            
+            e.PrevEvent = res.EventID;
             await events.InsertOneAsync(e);
         }
 
