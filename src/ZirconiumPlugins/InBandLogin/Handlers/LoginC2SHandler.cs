@@ -1,5 +1,7 @@
 using System.Collections.Generic;
+using System.Linq;
 using Zirconium.Core.Models;
+using Zirconium.Core.Models.Authorization;
 using Zirconium.Core.Plugins.Interfaces;
 using Zirconium.Utils;
 
@@ -7,7 +9,8 @@ namespace InBandLogin.Handlers
 {
     public class LoginC2SHandler : IC2SMessageHandler
     {
-        private const string errID = "invalid_creds";
+        private const string errID = "urn:cadmium:auth:invalid";
+        private const string invalidAuthType = "urn:cadmium:auth:invalid_type";
         private readonly IPluginHostAPI _pluginHost;
 
         public LoginC2SHandler(IPluginHostAPI pluginHostApi)
@@ -22,31 +25,41 @@ namespace InBandLogin.Handlers
 
         public string GetHandlingMessageType()
         {
-            return "profile:login";
+            return "urn:cadmium:auth";
         }
 
         public void HandleMessage(Session session, BaseMessage message)
         {
-            var pObj = message.Payload.ToObject<LoginRequestPayload>();
+            var pObj = message.Payload.ToObject<AuthorizationRequest>();
             var authProvider = _pluginHost.GetAuthProvider();
-            if (authProvider.TestPassword(pObj.Username, pObj.Password))
+            if (!authProvider.GetAuthSupportedMethods().Contains(pObj.Type))
+            {
+                var reply = OtherUtils.GenerateProtocolError(
+                    message,
+                    invalidAuthType,
+                    "auth type is invalid"
+                );
+                session.ConnectionHandler.SendMessage(reply);
+                return;
+            }
+            var authData = authProvider.TestAuthFields(pObj.Fields);
+            if (authData.Item1 != null)
             {
                 BaseMessage reply = new BaseMessage(message, true);
-                var p = new LoginResponsePayload();
-                string deviceID = "ABCDEF"; // TODO fix device id system
-                p.AuthToken = _pluginHost.GenerateAuthToken($"@{pObj.Username}@{_pluginHost.GetServerID()}", deviceID);
-                p.DeviceID = deviceID;
-                reply.Payload = p.ToDictionary();
+                if (authData.Item2 != null)
+                {
+                    reply.Payload = authData.Item2.ToDictionary();
+                }
                 reply.Ok = true;
                 session.ConnectionHandler.SendMessage(reply);
+                session.AuthData = authData.Item1;
             }
             else
             {
                 var reply = OtherUtils.GenerateProtocolError(
                     message,
                     errID,
-                    "Username/password isn't valid",
-                    new Dictionary<string, object>()
+                    "auth credentials isn't valid"
                 );
                 session.ConnectionHandler.SendMessage(reply);
             }

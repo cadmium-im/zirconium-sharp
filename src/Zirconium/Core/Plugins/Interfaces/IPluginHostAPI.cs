@@ -11,8 +11,6 @@ namespace Zirconium.Core.Plugins.Interfaces
         void Unhook(IC2SMessageHandler handler);
         void UnhookCoreEvent(ICoreEventHandler handler);
         void FireEvent(CoreEvent coreEvent);
-        string GenerateAuthToken(string entityID, string deviceID, int tokenExpirationMillis);
-        string GenerateAuthToken(string entityID, string deviceID);
         string[] GetServerDomains();
         string GetServerID();
         void SendMessage(Session session, BaseMessage message);

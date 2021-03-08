@@ -7,6 +7,7 @@ using Log4Sharp;
 using McMaster.NETCore.Plugins;
 using MongoDB.Driver;
 using Zirconium.Core.Models;
+using Zirconium.Core.Models.Authorization;
 using Zirconium.Core.Plugins.Interfaces;
 using Zirconium.Core.Plugins.IPC;
 using Zirconium.Utils;
@@ -76,7 +77,9 @@ namespace Zirconium.Core.Plugins
                                             typeof(BaseMessage),
                                             typeof(CoreEvent),
                                             typeof(ExportedIPCMethodAttribute),
-                                            typeof(IMongoDatabase)
+                                            typeof(IMongoDatabase),
+                                            typeof(AuthorizationRequest),
+                                            typeof(AuthorizationResponse)
                                         },
                     config => config.PreferSharedTypes = true
                 );

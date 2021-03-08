@@ -23,7 +23,6 @@ namespace Zirconium.Core
             _app.SessionManager.DeleteSession(ID);
             Log.Info($"Connection {ID} was closed (reason: {e.Reason})");
             // TODO implement closing connection
-            
         }
 
         protected override void OnError(ErrorEventArgs e)
@@ -45,7 +44,7 @@ namespace Zirconium.Core
                     var errMsg = OtherUtils.GenerateProtocolError(
                         null,
                         "parseError",
-                        $"Server cannot parse this message yet because it is not JSON",
+                        $"Server cannot parse this message because it is not JSON",
                         new Dictionary<string, object>()
                     );
                     errMsg.From = _app.Config.ServerID;
@@ -73,8 +72,8 @@ namespace Zirconium.Core
             var session = new Session();
             session.ClientAddress = ip;
             session.ConnectionHandler = this;
-            _app.SessionManager.AddSession(this.ID, session);
-            Log.Info($"Connection {this.ID} was created");
+            _app.SessionManager.AddSession(ID, session);
+            Log.Info($"Connection {ID} was created");
         }
 
         public void SendMessage(string message)

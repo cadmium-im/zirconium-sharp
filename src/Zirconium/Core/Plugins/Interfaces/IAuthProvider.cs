@@ -1,17 +1,18 @@
+using System.Collections.Generic;
+using Zirconium.Core.Models;
+using Zirconium.Core.Models.Authorization;
+
 namespace Zirconium.Core.Plugins.Interfaces
 {
     public interface IAuthProvider
     {
-        // Method for checking validity of access token in each message
-        SessionAuthData TestToken(string token);
-
-        // Method for testing password when logging in
-        bool TestPassword(string username, string pass);
+        (SessionAuthData, AuthorizationResponse) TestAuthFields(IDictionary<string, dynamic> fields);
+        
+        EntityID GetEntityID(IDictionary<string, dynamic> fields);
 
         // User registration logic
         void CreateUser(string username, string pass);
-
-        string CreateAuthToken(string entityID, string deviceID, long tokenExpirationMillis);
         string GetAuthProviderName();
+        string[] GetAuthSupportedMethods();
     }
 }

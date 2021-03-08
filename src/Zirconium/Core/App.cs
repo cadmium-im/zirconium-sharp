@@ -13,7 +13,7 @@ namespace Zirconium.Core
         public Router Router { get; }
         public PluginManager PluginManager { get; }
         public IPluginHostAPI PluginHostAPI { get; }
-        public AuthManager AuthManager { get; }
+        public AuthProviderManager AuthProviderManager { get; }
         private WebSocketServer _websocketServer;
         public DatabaseConnector Database { get; private set; }
 
@@ -25,11 +25,11 @@ namespace Zirconium.Core
             SessionManager = new SessionManager();
             Router = new Router(this);
             PluginHostAPI = new PluginHostAPI(this, Router);
-            AuthManager = new AuthManager(this);
+            AuthProviderManager = new AuthProviderManager(this);
             Database = new DatabaseConnector(this);
             PluginManager = new PluginManager(PluginHostAPI);
             PluginManager.LoadPlugins(config.PluginsDirPath, config.EnabledPlugins);
-            AuthManager.SetDefaultAuthProvider();
+            AuthProviderManager.SetDefaultAuthProvider();
             Log.Info("Zirconium is initialized successfully");
         }
 

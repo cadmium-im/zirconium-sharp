@@ -1,4 +1,3 @@
-using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 using MongoDB.Driver;
@@ -27,17 +26,12 @@ namespace Zirconium.Core.Plugins
         }
 
         public void ProvideAuth(IAuthProvider provider) {
-            _app.AuthManager.AddAuthProvider(provider);
+            _app.AuthProviderManager.AddAuthProvider(provider);
         }
 
         public void FireEvent(CoreEvent coreEvent)
         {
             _router.RouteCoreEvent(coreEvent);
-        }
-
-        public string GenerateAuthToken(string entityID, string deviceID, int tokenExpirationMillis)
-        {
-            return _app.AuthManager.CreateToken(entityID, deviceID, tokenExpirationMillis);
         }
 
         public string[] GetServerDomains()
@@ -105,12 +99,7 @@ namespace Zirconium.Core.Plugins
 
         public IAuthProvider GetAuthProvider()
         {
-            return _app.AuthManager.DefaultAuthProvider;
-        }
-
-        public string GenerateAuthToken(string entityID, string deviceID)
-        {
-            return _app.AuthManager.CreateToken(entityID, deviceID);
+            return _app.AuthProviderManager.DefaultAuthProvider;
         }
     }
 }

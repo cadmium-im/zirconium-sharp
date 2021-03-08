@@ -83,7 +83,7 @@ namespace ChatSubsystem
             var recipientSession = pluginHostAPI.GetSessionManager()
                 .GetSessions()
                 .Select(x => x.Value)
-                .Where(x => x.LastTokenPayload.EntityID.Where(x => x == message.To.First()).FirstOrDefault() != null)
+                .Where(x => x.AuthData.EntityID.Where(x => x == message.To.First()).FirstOrDefault() != null)
                 .FirstOrDefault();
 
             if (recipientSession == null)
@@ -93,7 +93,7 @@ namespace ChatSubsystem
             }
 
             var msgForRecipient = new BaseMessage();
-            msgForRecipient.From = session.LastTokenPayload.EntityID.First();
+            msgForRecipient.From = session.AuthData.EntityID.First();
             msgForRecipient.MessageType = "urn:cadmium:chats:message";
             respPayload.Type = receivedMessage.Type;
             respPayload.Content = receivedMessage.Content;

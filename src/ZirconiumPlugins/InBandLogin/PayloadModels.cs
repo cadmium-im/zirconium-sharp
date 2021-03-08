@@ -27,9 +27,6 @@ namespace InBandLogin
 
         [JsonProperty("password")]
         public string Password { get; set; }
-
-        [JsonProperty("loginOnSuccess")]
-        public bool LoginOnSuccess { get; set; }
     }
 
     class RegisterResponsePayload

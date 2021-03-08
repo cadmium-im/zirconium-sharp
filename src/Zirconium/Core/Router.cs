@@ -36,45 +36,23 @@ namespace Zirconium.Core
                     new Dictionary<string, object>()
                 );
                 msg.From = _app.Config.ServerID;
-                var serializedMsg = JsonConvert.SerializeObject(msg);
-                session.ConnectionHandler.SendMessage(serializedMsg);
+                session.ConnectionHandler.SendMessage(msg);
                 return;
             }
             var handlerTasks = new List<Task>();
             foreach (var h in handlers)
             {
-                if (h.IsAuthorizationRequired())
+                if (h.IsAuthorizationRequired() && session.AuthData == null)
                 {
-                    SessionAuthData tokenPayload;
-                    try
-                    {
-                        tokenPayload = _app.AuthManager.ValidateToken(message.AuthToken);
-                    }
-                    catch (Exception e)
-                    {
-                        Log.Warning(e.Message);
-                        var errorMsg = OtherUtils.GenerateProtocolError(
-                                                            message,
-                                                            "unauthorized",
-                                                            "Unauthorized access",
-                                                            new Dictionary<string, object>()
-                                                        );
-                        errorMsg.From = _app.Config.ServerID;
-                        var serializedMsg = JsonConvert.SerializeObject(errorMsg);
-
-                        session.LastTokenPayload = null;
-                        session.ConnectionHandler.SendMessage(serializedMsg);
-                        return;
-                    }
-                    session.LastTokenPayload = tokenPayload;
+                    session.ConnectionHandler.SendMessage(OtherUtils.GenerateUnauthorizedError(message, _app.Config.ServerID));
+                    return;
                 }
-
-                var task = Task.Run(() =>
+                
+                handlerTasks.Add(Task.Run(() =>
                 {
                     // probably need to wrap whole foreach body, not only HandleMessage call - need to investigate
                     h.HandleMessage(session, message);
-                });
-                handlerTasks.Add(task);
+                }));
             }
             try
             {

@@ -8,6 +8,9 @@ using Newtonsoft.Json;
 using JWT.Algorithms;
 using JWT.Builder;
 using System;
+using System.Collections.Generic;
+using Zirconium.Core.Models;
+using Zirconium.Core.Models.Authorization;
 using Zirconium.Utils;
 
 namespace DefaultAuthProvider
@@ -23,12 +26,14 @@ namespace DefaultAuthProvider
         {
             var db = pluginHost.GetRawDatabase();
             var jwtSecret = pluginHost.GetSettings(this)["JWTSecret"];
-            pluginHost.ProvideAuth(new DefaultAuthProvider(db, jwtSecret));
+            pluginHost.ProvideAuth(new DefaultAuthProvider(db, jwtSecret, pluginHost.GetServerID()));
         }
     }
 
     public class DefaultAuthProvider : IAuthProvider
     {
+        private const long DEFAULT_TOKEN_EXPIRATION_TIME_HOURS = 24 * 3600000;
+        
         public class User
         {
             [BsonId]
@@ -41,11 +46,13 @@ namespace DefaultAuthProvider
         private IMongoDatabase _db;
         private IMongoCollection<User> usersCol;
         private string jwtSecret;
+        private string _serverID;
 
-        public DefaultAuthProvider(IMongoDatabase db, string jwtSecret)
+        public DefaultAuthProvider(IMongoDatabase db, string jwtSecret, string serverID)
         {
             this._db = db;
             this.jwtSecret = jwtSecret;
+            this._serverID = serverID;
             this.usersCol = db.GetCollection<User>("default_auth_data");
             _createUsernameUniqueIndex();
         }
@@ -59,21 +66,49 @@ namespace DefaultAuthProvider
             usersCol.Indexes.CreateOne(createIndexModel);
         }
 
+        public EntityID GetEntityID(IDictionary<string, dynamic> fieldsDict)
+        {
+            var fields = fieldsDict.ToObject<LoginPassFields>();
+            return new EntityID('@', fields.Username, _serverID);
+        }
+
         public void CreateUser(string username, string pass)
         {
             var user = new User();
             user.Username = username; // TODO add check on bad chars
             var hashed = PasswordHasher.CreatePasswordHash(pass);
-            System.GC.Collect();
+            GC.Collect();
             user.Password = hashed.Item1;
             user.Salt = hashed.Item2;
             _db.GetCollection<User>("default_auth_data").InsertOne(user);
         }
 
-        public string GetAuthProviderName()
+        public (SessionAuthData, AuthorizationResponse) TestAuthFields(IDictionary<string, dynamic> fieldsDict)
         {
-            return "default";
+            if (fieldsDict.GetValueOrDefault("token") == null)
+            {
+                var fields = fieldsDict.ToObject<LoginPassFields>();
+                bool valid = TestPassword(fields.Username, fields.Password);
+                if (valid)
+                {
+                    // TODO Fix device system
+                    var tokenData = CreateAuthToken(GetEntityID(fieldsDict).ToString(), "ABCDEF", DEFAULT_TOKEN_EXPIRATION_TIME_HOURS);
+                    var res = new AuthorizationResponse()
+                    {
+                        Token = tokenData.Item1
+                    };
+                    return (tokenData.Item2, res);
+                }
+
+                return (null, null);
+            }
+
+            return (TestToken(fieldsDict["token"]), null);
         }
+
+        public string GetAuthProviderName() => "default";
+
+        public string[] GetAuthSupportedMethods() => new[] { "urn:cadmium:auth:login_password", "urn:cadmium:auth:token" };
 
         public bool TestPassword(string username, string pass)
         {
@@ -84,32 +119,40 @@ namespace DefaultAuthProvider
                 return false;
             }
             var valid = PasswordHasher.VerifyHash(pass, user.Salt, user.Password);
-            System.GC.Collect();
+            GC.Collect();
             return valid;
         }
 
         public SessionAuthData TestToken(string token)
         {
-            var jsonPayload = new JwtBuilder()
-                .WithAlgorithm(new HMACSHA256Algorithm()) // symmetric
-                .WithSecret(this.jwtSecret)
-                .MustVerifySignature()
-                .Decode(token);
-            var payload = JsonConvert.DeserializeObject<SessionAuthData>(jsonPayload);
-            return payload; // TODO add enchanced token validation
+            try
+            {
+                var jsonPayload = new JwtBuilder()
+                    .WithAlgorithm(new HMACSHA256Algorithm()) // symmetric
+                    .WithSecret(jwtSecret)
+                    .MustVerifySignature()
+                    .Decode(token);
+                var payload = JsonConvert.DeserializeObject<SessionAuthData>(jsonPayload);
+                if (payload == null) payload = new SessionAuthData();
+                return payload; // TODO add enchanced token validation
+            }
+            catch
+            {
+                return null;
+            }
         }
 
-        public string CreateAuthToken(string entityID, string deviceID, long tokenExpirationMillis)
+        private (string, SessionAuthData) CreateAuthToken(string entityID, string deviceID, long tokenExpirationMillis)
         {
             SessionAuthData payload = new SessionAuthData();
             payload.DeviceID = deviceID;
             payload.EntityID = new string[] { entityID };
-            return new JwtBuilder()
+            return (new JwtBuilder()
                 .WithAlgorithm(new HMACSHA256Algorithm()) // symmetric
                 .WithSecret(this.jwtSecret)
                 .AddClaim("exp", DateTimeOffset.UtcNow.AddMilliseconds(tokenExpirationMillis).ToUnixTimeSeconds())
                 .AddClaims(payload.ToDictionary())
-                .Encode();
+                .Encode(), payload);
         }
     }
 }

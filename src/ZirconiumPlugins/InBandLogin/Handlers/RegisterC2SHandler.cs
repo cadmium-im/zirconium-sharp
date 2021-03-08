@@ -22,7 +22,7 @@ namespace InBandLogin.Handlers
 
         public string GetHandlingMessageType()
         {
-            return "profile:register";
+            return "urn:cadmium:register";
         }
 
         public void HandleMessage(Session session, BaseMessage message)
@@ -62,12 +62,6 @@ namespace InBandLogin.Handlers
             BaseMessage reply = new BaseMessage(message, true);
             var p = new RegisterResponsePayload();
             p.UserID = $"@{pObj.Username}@{_pluginHost.GetServerID()}";
-            if (pObj.LoginOnSuccess)
-            {
-                string deviceID = "ABCDEF"; // TODO fix device id system
-                p.AuthToken = _pluginHost.GenerateAuthToken($"@{pObj.Username}@{_pluginHost.GetServerID()}", deviceID);
-                p.DeviceID = deviceID;
-            }
 
             reply.Payload = p.ToDictionary();
             reply.Ok = true;

@@ -22,15 +22,17 @@ namespace Zirconium.Core.Models
         [JsonProperty("ok")]
         public bool Ok { get; set; }
 
-        [JsonProperty("authToken", NullValueHandling = NullValueHandling.Ignore)]
-        public string AuthToken { get; set; }
-
-        [JsonProperty("payload")]
+        [JsonProperty("payload", NullValueHandling = NullValueHandling.Ignore)]
         public IDictionary<string, object> Payload { get; set; }
 
         public BaseMessage() { 
             Payload = new Dictionary<string, object>();
             ID = Guid.NewGuid().ToString();
+        }
+
+        public BaseMessage(string type) : this()
+        {
+            MessageType = type;
         }
 
         public BaseMessage(BaseMessage message, bool reply) : this()
@@ -43,13 +45,12 @@ namespace Zirconium.Core.Models
                 {
                     // TODO probably need to fix it
                     From = message.To.First();
-                    To = new string[] { message.From };
+                    To = new[] { message.From };
                 }
                 else
                 {
                     From = message.From;
                     To = message.To;
-                    AuthToken = message.AuthToken;
                 }
 
                 Ok = message.Ok;
