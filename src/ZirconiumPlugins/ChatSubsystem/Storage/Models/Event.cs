@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using MongoDB.Bson;
 using MongoDB.Bson.Serialization.Attributes;
 using Zirconium.Core.Models;
@@ -13,8 +14,8 @@ namespace ChatSubsystem.Storage.Models
         public EntityID ChatId { get; set; }
         public string Type { get; set; }
         public long Timestamp { get; set; }
-        public EntityID PrevEvent { get; set; }
-        public ObjectId PrevID { get; set; }
+        public IList<EntityID> PrevEvents { get; set; }
+        public IList<ObjectId> PrevID { get; set; }
         public EntityID OriginServer { get; set; }
         public EventContent Content { get; set; }
     }
