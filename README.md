@@ -1,6 +1,6 @@
 # Zirconium
 
-This is experimental serverside implementation of Cadmium protocol in C#.
+Zirconium is experimental serverside implementation of Cadmium protocol in C#.
 
 ## Contributing
 
