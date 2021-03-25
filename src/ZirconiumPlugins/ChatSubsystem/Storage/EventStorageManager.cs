@@ -3,6 +3,8 @@ using System.Linq;
 using System.Threading.Tasks;
 using ChatSubsystem.Storage.Interfaces;
 using ChatSubsystem.Storage.Models;
+using MongoDB.Bson;
+using MongoDB.Bson.Serialization;
 using MongoDB.Driver;
 using Zirconium.Core.Models;
 
@@ -12,9 +14,6 @@ namespace ChatSubsystem.Storage
     {
         private const string EventsCollectionName = "events";
         
-        // get event by id
-        // get events for user after some point in timeline (via sorting by event id)
-
         private ChatStorageManager _chatStorageManager;
         private IMongoCollection<Event> events;
 
@@ -24,56 +23,105 @@ namespace ChatSubsystem.Storage
             events = database.GetCollection<Event>(EventsCollectionName);
         }
 
-        public async Task<IList<Event>> GetEventsForUser(EntityID user, EntityID since, int limit)
+        public async Task<(IList<Event>, IList<Chat>)> GetEventsForUser(EntityID user, EntityID since, int limit)
         {
             var chats = await _chatStorageManager.GetChatsForUser(user);
-            
-            return new List<Event>();
+
+            var evs = new List<Event>();
+
+            foreach (var c in chats)
+            {
+                var res = await GetEventsForChat(c, since, limit);
+                evs.AddRange(res);
+            }
+
+            evs = evs.OrderBy(x => x.Timestamp).ToList();
+
+            return (evs, chats);
         }
 
-        private async Task<IList<Event>> GetEventsForChat(EntityID since, int limit)
+        private async Task<IList<Event>> GetEventsForChat(Chat chat, EntityID since, int limit)
         {
-            return new List<Event>();
+            var graphLookupStage = new BsonDocument("$graphLookup",
+                new BsonDocument
+                {
+                    { "from", EventsCollectionName },
+                    { "startWith", "{ EventID: "+since+" }" },
+                    { "connectFromField", "EventID"},
+                    { "connectToField",  "PrevEvents" },
+                    { "as", "Children" },
+                    { "maxDepth", limit },
+                    { "restrictSearchWithMatch", "{ ChatId: "+chat.Id+" }" }
+                });
+
+            var result = await events.Aggregate()
+                .AppendStage<BsonDocument>(graphLookupStage).ToListAsync();
+
+            var deserializedResult = new List<Event>();
+            result.ForEach(x =>
+            {
+                deserializedResult.Add(BsonSerializer.Deserialize<EventWithChildren>(x));
+            });
+
+            return deserializedResult;
         }
 
         public async Task SaveEvent(Event e)
         {
-            var connectFromField = (FieldDefinition<Event, EntityID>)"_id";
-            var connectToField = (FieldDefinition<Event, EntityID>)"PrevID";
-            var startWith = (AggregateExpressionDefinition<Event, string>)"$_id";
-            var @as = (FieldDefinition<EventWithChildren, IEnumerable<Event>>)"Children";
-
-            // link to previous global events
-            var res = await events.Aggregate()
-                .GraphLookup(events, connectFromField, connectToField, startWith, @as)
-                .Match("{ Children: { $size: 0 } }").ToListAsync();
-            if (res.Count == 0)
+            var graphLookupStage = new BsonDocument("$graphLookup",
+                new BsonDocument
+                {
+                    { "from", EventsCollectionName },
+                    { "startWith", "$_id" },
+                    { "connectFromField", "_id"},
+                    { "connectToField",  "PrevID" },
+                    { "as", "Children" },
+                    { "maxDepth", 0 }
+                });
+            
+            var result = await events.Aggregate()
+                .AppendStage<BsonDocument>(graphLookupStage)
+                .Match("{ Children: { $size: 0 } }")
+                .ToListAsync();
+            
+            if (result.Count == 0)
             {
                 await events.InsertOneAsync(e);
                 return;
             }
-            res.ForEach(x =>
+            result.ForEach(x =>
             {
-                e.PrevID.Append(x.Id);
+                var y = BsonSerializer.Deserialize<EventWithChildren>(x);
+                e.PrevID.Append(y.Id);
             });
             
-            // link to previous events in chat
-            connectToField = (FieldDefinition<Event, EntityID>)"PrevEvents";
-            var opts = new AggregateGraphLookupOptions<Event, Event, EventWithChildren>()
-            {
-                RestrictSearchWithMatch = "{ ChatId: "+e.ChatId+" }"
-            };
-            res = await events.Aggregate()
-                .GraphLookup(events, connectFromField, connectToField, startWith, @as, opts)
-                .Match("{ Children: { $size: 0 } }").ToListAsync();
-            if (res.Count == 0)
+            graphLookupStage = new BsonDocument("$graphLookup",
+                new BsonDocument
+                {
+                    { "from", EventsCollectionName },
+                    { "startWith", "$EventID" },
+                    { "connectFromField", "EventID"},
+                    { "connectToField",  "PrevEvents" },
+                    { "as", "Children" },
+                    { "maxDepth", 0 },
+                    { "restrictSearchWithMatch", "{ ChatId: "+e.ChatId+" }" }
+                });
+
+            
+            result = await events.Aggregate()
+                .AppendStage<BsonDocument>(graphLookupStage)
+                .Match("{ Children: { $size: 0 } }")
+                .ToListAsync();
+            
+            if (result.Count == 0)
             {
                 await events.InsertOneAsync(e);
                 return;
             }
-            res.ForEach(x =>
+            result.ForEach(x =>
             {
-                e.PrevEvents.Append(x.EventID);
+                var y = BsonSerializer.Deserialize<EventWithChildren>(x);
+                e.PrevEvents.Append(y.EventID);
             });
             
             await events.InsertOneAsync(e);

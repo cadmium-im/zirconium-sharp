@@ -3,7 +3,6 @@ using MongoDB.Bson.Serialization.Attributes;
 using MongoDB.Driver;
 using Zirconium.Core;
 using Zirconium.Core.Plugins.Interfaces;
-using System.Linq;
 using Newtonsoft.Json;
 using JWT.Algorithms;
 using JWT.Builder;
